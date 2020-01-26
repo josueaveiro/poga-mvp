@@ -27,9 +27,12 @@ export function initialState()
                 numeracion: "",
             },
             id_inmueble: {
+                area: "0",
+                area_estacionamiento: "0",
                 caracteristicas: [],
                 descripcion: "",
                 enum_estado: "ACTIVO",
+                id_medida: "1",
                 id_tipo_inmueble: "1",
                 solicitud_directa_inquilinos: true,
             },
