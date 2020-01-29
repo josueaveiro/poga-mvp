@@ -22,8 +22,8 @@ export function initialState()
                 calle_secundaria: "",
                 ciudad: "",
                 departamento: "",
-                latitud: "",
-                longitud: "",
+                latitud: -25.2968361,
+                longitud: -57.6681294,
                 numeracion: "",
             },
             id_inmueble: {

@@ -1,0 +1,1176 @@
+<style lang="scss">
+.map {
+  height: 20rem;
+  width: 100%;
+}
+
+.step-content {
+  min-height: 75vh;
+}
+</style>
+
+<template>
+  <div class="bg-light">
+    <form>
+      <b-input
+        v-model="form.divisible_en_unidades"
+        :disabled="submitted"
+        name="divisible_en_unidades"
+        type="hidden"
+      />
+      <b-input
+        v-model="form.id_direccion.latitud"
+        :disabled="submitted"
+        name="id_direccion.latitud"
+        type="hidden"
+      />
+      <b-input
+        v-model="form.id_direccion.longitud"
+        :disabled="submitted"
+        name="id_direccion.longitud"
+        type="hidden"
+      />
+      <b-input
+        v-model="form.id_propietario_referente"
+        :disabled="submitted"
+        type="hidden"
+        name="id_propietario_referente"
+      />
+      <b-input
+        v-model="form.unidades[0].area_estacionamiento"
+        :disabled="submitted"
+        name="unidades.0.area_estacionamiento"
+        type="hidden"
+      />
+
+      <div class="columns is-gapless">
+        <div class="bg-white column is-7">
+          <b-steps
+            v-model="activeStep"
+            :disabled="submitted"
+            class="p-md-5"
+            :animated="true"
+            :custom-navigation="true"
+            :has-navigation="true"
+          >
+            <b-step-item
+              label=""
+              :clickable="true"
+            >
+              <h3 class="title mb-5 is-3">
+                {{ title }}
+              </h3>
+              <h6 class="title is-6">
+                PASO 1
+              </h6>
+              <h5 class="subtitle is-4">
+                ¿Qué tipo de inmueble tenés?
+              </h5>
+
+              <b-field>
+                <b-radio-button
+                  v-model="form.id_inmueble.id_tipo_inmueble"
+                  :disabled="submitted"
+                  native-value="2"
+                >
+                  <span>Casa</span>
+                </b-radio-button>
+
+                <b-radio-button
+                  v-model="form.id_inmueble.id_tipo_inmueble"
+                  :disabled="submitted"
+                  native-value="1"
+                >
+                  <span>Departamento</span>
+                </b-radio-button>
+              </b-field>
+
+              <b-field v-show="form.id_inmueble.id_tipo_inmueble == 1">
+                <b-radio-button
+                  v-model="form.modalidad_propiedad"
+                  :disabled="submitted"
+                  native-value="EN_CONDOMINIO"
+                >
+                  <span>En condominio</span>
+                </b-radio-button>
+
+                <b-radio-button
+                  v-model="form.modalidad_propiedad"
+                  :disabled="submitted"
+                  native-value="UNICO_PROPIETARIO"
+                >
+                  <span>Único propietario</span>
+                </b-radio-button>
+              </b-field>
+
+              <p v-if="form.modalidad_propiedad === 'EN_CONDOMINIO'">El edificio en el cual se encuentra el departamento está compuesto por más de un propietario.</p>
+              <p v-else>Todos los departamentos del edificio corresponden a un único propietario.</p>
+            </b-step-item>
+
+            <b-step-item
+              label=""
+              :clickable="true"
+            >
+              <h3 class="title mb-5 is-3">
+                ¿Dónde se encuentra ubicado el inmueble?
+              </h3>
+
+              <b-field>
+                <b-button
+                  icon="location"
+                  size="is-medium"
+                  :disabled="geolocating||submitted"
+                  :type="[{ 'is-primary': true }, { 'is-loading': geolocating }]"
+                  outlined
+                  @click="handleReverseGeocoding()"
+                >
+                  Usá la ubicación actual
+                </b-button>
+              </b-field>
+
+              <b-field label="Introduce una ubicación para autocompletar los campos">
+                <b-input
+                  id="autocomplete"
+                  v-model="autocompleteSearch"
+                  :disabled="submitted"
+                  size="is-medium"
+                  type="text"
+                  @input="geolocate"
+                />
+              </b-field>
+
+              <b-field grouped>
+                <b-field
+                  label="Calle principal *"
+                  :message="getErrorMessage(['id_direccion.calle_principal', 'calle_principal'])"
+                  :type="setFieldType(['id_direccion.calle_principal', 'calle_principal'])"
+                >
+                  <b-input
+                    v-model="form.id_direccion.calle_principal"
+                    v-validate="'required'"
+                    :disabled="submitted"
+                    data-vv-as="Calle principal"
+                    name="calle_principal"
+                    size="is-medium"
+                  />
+                </b-field>
+
+                <b-field label="Numeración">
+                  <b-input
+                    v-model="form.id_direccion.numeracion"
+                    :disabled="submitted"
+                    size="is-medium"
+                  />
+                </b-field>
+              </b-field>
+
+              <b-field label="Calle secundaria"> 
+                <b-input
+                  v-model="form.id_direccion.calle_secundaria"
+                  :disabled="submitted"
+                  size="is-medium"
+                />
+              </b-field>
+
+              <b-field label="Ciudad">
+                <b-input
+                  v-model="form.id_direccion.ciudad"
+                  :disabled="submitted"
+                  size="is-medium"
+                />
+              </b-field>
+
+              <b-field label="Departamento">
+                <b-input
+                  v-model="form.id_direccion.departamento"
+                  :disabled="submitted"
+                  size="is-medium"
+                />
+              </b-field>
+            </b-step-item>
+
+            <b-step-item
+              label=""
+              :clickable="true"
+            >
+              <h3 class="subtitle is-3">
+                ¿Está el marcador en el lugar correcto?
+              </h3>
+              <h4 class="subtitle is-4">
+                Si es necesario, podés arrastrar el marcador hasta la ubicación correcta.
+              </h4>
+
+              <p class="mb-3">
+                {{ autocompleteSearch }}
+              </p>
+              <div
+                id="map"
+                class="map mb-5"
+              />
+
+              <div v-if="allInmuebles.length > 0">
+                <h5 class="title is-5">
+                  Una de las siguientes coincidencias corresponde a mi inmueble:
+                </h5>
+
+                <div
+                  v-for="item in allInmuebles"
+                  class="field"
+                >
+                  <b-radio
+                    v-model="form.id_inmueble_padre"
+                    name="id_inmueble_padre"
+                    size="is-medium"
+                    :native-value="item.id"
+                  >
+                    {{ item.direccion }}
+                  </b-radio>
+                </div>
+
+                <div class="is-divider" />
+
+                <b-radio
+                  ref="nuevoRegistro"
+                  v-model="form.id_inmueble_padre"
+                  name="id_inmueble_padre"
+                  size="is-medium"
+                  native-value=""
+                >
+                  Quiero crear un registro nuevo.
+                </b-radio>
+              </div>
+            </b-step-item>
+
+            <b-step-item
+              label=""
+              :clickable="true"
+            >
+              <h3 class="title mb-5 is-3">
+                Características generales {{ form.id_inmueble.id_tipo_inmueble == "1" ? "del Edificio" : "de la Casa" }}
+              </h3>
+
+              <b-field
+                label="Nombre del edificio"
+                :message="getErrorMessage(['nombre', 'nombre'])"
+                :type="setFieldType(['nombre', 'nombre'])"
+              >
+                <b-input
+                  v-model="form.nombre"
+                  :disabled="submitted"
+                  name="nombre"
+                  type="text"
+                  placeholder="Un nombre para el inmueble"
+                />
+              </b-field>
+
+              <b-field
+                label="Edificio para *"
+                :message="getErrorMessage(['formatos', 'formatos'])"
+                :type="setFieldType(['formatos', 'formatos'])"
+              >
+                <b-select
+                  v-model="form.formatos"
+                  v-validate="'required'"
+                  :disabled="submitted"
+                  data-vv-as="Formatos"
+                  name="formatos"
+                  expanded
+                  multiple
+                  placeholder="Seleccioná uno o más formatos"
+                >
+                  <option
+                    v-for="item in allFormatos"
+                    :key="item.id"
+                    :value="item.id"
+                  >
+                    {{ item.formato }}
+                  </option>
+                </b-select>
+              </b-field>
+
+              <b-field
+                label="Cantidad de pisos"
+                :message="getErrorMessage(['cant_pisos', 'cant_pisos'])"
+                :type="setFieldType(['cant_pisos', 'cant_pisos'])"
+              >
+                <b-numberinput
+                  v-model="form.cant_pisos"
+                  v-validate="'required'"
+                  :disabled="submitted"
+                  icon-pack="fas"
+                  max="50"
+                  min="1"
+                  controls-rounded
+                  required
+                />
+              </b-field>
+
+              <b-field
+                v-if="form.id_inmueble.id_tipo_inmueble == 2"
+                label="Metros cuadrados construidos"
+                :message="getErrorMessage(['id_inmueble.area', 'area'])"
+                :type="setFieldType(['id_inmueble.area', 'area'])"
+              >
+                <b-input
+                  v-model="form.id_inmueble.area"
+                  v-validate="'required|min_value:15'"
+                  :disabled="submitted"
+                  name="area"
+                  data-vv-as="Metros cuadrados construidos"
+                  min="15"
+                  type="number"
+                />
+              </b-field>
+
+              <div
+                v-for="item in caracteristicasComodidades.filter(c => c.id_grupo_caracteristica == 3)"
+                v-if="form.id_inmueble.id_tipo_inmueble == 2"
+                :key="item.id"
+                class="field"
+              >
+                <b-field :label="item.id_caracteristica.nombre">
+                  <b-numberinput
+                    v-model="caracteristicas[item.id]"
+                    :disabled="submitted"
+                    min="0"
+                    icon-pack="fas"
+                  />
+                </b-field>
+              </div>
+
+              <div class="is-divider" />
+
+              <!--
+              <h6 class="title is-6">
+                Personal
+              </h6>
+
+              <b-field
+                grouped
+                group-multiline
+              >
+                <div
+                  v-for="item in caracteristicasPersonal"
+                  :key="item.id"
+                  class="field"
+                >
+                  <b-switch
+                    v-model="caracteristicas[item.id]"
+                    :disabled="submitted"
+                  >
+                    {{ item.id_caracteristica.nombre }}
+                  </b-switch>
+                </div>
+              </b-field>
+
+              <div class="is-divider" />
+
+             
+              <h6 class="title is-6"> 
+                Reglamento de propiedad
+              </h6>
+
+              <b-field
+                grouped
+                group-multiline
+              >
+                <div
+                  v-for="item in caracteristicasReglamentoPropiedad"
+                  :key="item.id"
+                  class="field"
+                >
+                  <b-switch
+                    v-model="caracteristicas[item.id]"
+                    :disabled="submitted"
+                  >
+                    {{ item.id_caracteristica.nombre }}
+                  </b-switch>
+                </div>
+              </b-field>
+              -->
+
+              <b-field label="Reglamento de propiedad">
+                <vue-dropzone
+                  id="dzDocuments"
+                  ref="dzDocuments"
+                  :options="dzDocumentsOptions"
+                  @vdropzone-error="dzDocumentsError"
+                  @vdropzone-removed-file="dzDocumentsRemovedFile"
+                  @vdropzone-processing="dzDocumentsProcessing"
+                  @vdropzone-success-multiple="dzDocumentsSuccess"
+                  @vdropzone-upload-progress="dzDocumentsUploadProgress"
+                />
+              </b-field>
+            </b-step-item>
+
+            <b-step-item
+              label=""
+              :visible="isEdificio"
+            >
+              <h3 class="subtitle is-3">
+                Amenities del Edificio
+              </h3>
+
+              <b-field
+                v-for="item in caracteristicasAmenities"
+                :key="item.id"
+                class="field"
+              >
+                <b-switch
+                  v-model="caracteristicas[item.id]"
+                  :disabled="submitted"
+                >
+                  {{ item.id_caracteristica.nombre }}
+                </b-switch>
+              </b-field>
+            </b-step-item>
+
+            <b-step-item
+              label=""
+              :visible="isEdificio"
+            >
+              <h5 class="subtitle is-4">
+                Características generales del Departamento
+              </h5>
+
+              <b-field
+                grouped
+                group-multiline
+              >
+                <b-field
+                  label="Piso"
+                  :message="getErrorMessage(['unidades[0].piso', 'piso'])"
+                  :type="setFieldType(['unidades[0].piso', 'piso'])"
+                >
+                  <b-input
+                    v-model="form.unidades[0].piso"
+                    v-validate="'required|numeric'"
+                    data-vv-as="Piso"
+                    name="piso"
+                    :disabled="submitted"
+                    :max="form.cant_pisos"
+                    min="0"
+                    type="number"
+                  />
+                </b-field>
+
+                <b-field
+                  label="Número o Identificación"
+                  :message="getErrorMessage(['unidades[0].numero', 'numero'])"
+                  :type="setFieldType(['unidades[0].numero', 'numero'])"
+                >
+                  <b-input
+                    v-model="form.unidades[0].numero"
+                    v-validate="'required'"
+                    :disabled="submitted"
+                    name="numero"
+                    data-vv-as="Numero"
+                    type="text"
+                  />
+                </b-field>
+              </b-field>
+
+              <b-field
+                label="Metros cuadrados construidos"
+                :message="getErrorMessage(['unidades[0].area', 'area'])"
+                :type="setFieldType(['unidades[0].area', 'area'])"
+              >
+                <b-input
+                  v-model="form.unidades[0].area"
+                  v-validate="'required|min_value:15'"
+                  :disabled="submitted"
+                  name="area"
+                  data-vv-as="Metros cuadrados construidos"
+                  min="15"
+                  type="number"
+                />
+              </b-field>
+
+              <b-field
+                label="Departamento para *"
+                :message="getErrorMessage(['unidades[0].id_formato_inmueble', 'id_formato_inmueble'])"
+                :type="setFieldType(['unidades[0].id_formato_inmueble', 'id_formato_inmueble'])"
+              >
+                <b-select
+                  v-model="form.unidades[0].id_formato_inmueble"
+                  v-validate="'required'"
+                  :disabled="submitted"
+                  data-vv-as="Formato"
+                  name="id_formato_inmueble"
+                  expanded
+                  placeholder="Seleccioná un formato"
+                >
+                  <option
+                    v-for="item in formatosInmueble"
+                    :key="item.id"
+                    :value="item.id"
+                  >
+                    {{ item.formato }}
+                  </option>
+                </b-select>
+              </b-field>
+
+              <div
+                v-for="item in caracteristicasComodidades.filter(c => c.id_grupo_caracteristica == 3)"
+                :key="item.id"
+                class="field"
+              >
+                <b-field :label="item.id_caracteristica.nombre">
+                  <b-numberinput
+                    v-model="caracteristicasDepto[item.id]"
+                    :disabled="submitted"
+                    min="0"
+                    icon-pack="fas"
+                  />
+                </b-field>
+              </div>
+            </b-step-item>
+
+            <b-step-item
+              label=""
+              :clickable="true"
+            >
+              <h3 class="title mb-5 is-3">
+                ¿Qué comodidades ofrecés?
+              </h3>
+
+              <div class="content">
+                <h6 class="title is-6">
+                  Electrodomésticos
+                </h6>
+                <b-field
+                  grouped
+                  group-multiline
+                  class="mb-4"
+                >
+                  <div
+                    v-for="item in caracteristicasComodidades.filter(c => c.id_grupo_caracteristica == 1)"
+                    :key="item.id"
+                    class="field"
+                  >
+                    <div v-if="isEdificio">
+                      <b-switch
+                        v-model="caracteristicasDepto[item.id]"
+                        :disabled="submitted"
+                      >
+                        {{ item.id_caracteristica.nombre }}
+                      </b-switch>
+                    </div>
+                    <div v-else>
+                      <b-switch
+                        v-model="caracteristicas[item.id]"
+                        :disabled="submitted"
+                      >
+                        {{ item.id_caracteristica.nombre }}
+                      </b-switch>
+                    </div>
+                  </div>
+                </b-field>
+
+                <h6 class="title is-6">
+                  Amoblamiento
+                </h6>
+                <b-field
+                  grouped
+                  group-multiline
+                  class="mb-4"
+                >
+                  <div
+                    v-for="item in caracteristicasComodidades.filter(c => c.id_grupo_caracteristica == 2)"
+                    :key="item.id"
+                    class="field"
+                  >
+                    <div v-if="isEdificio">
+                      <b-switch
+                        v-model="caracteristicasDepto[item.id]"
+                        :disabled="submitted"
+                      >
+                        {{ item.id_caracteristica.nombre }}
+                      </b-switch>
+                    </div>
+                    <div v-else>
+                      <b-switch
+                        v-model="caracteristicas[item.id]"
+                        :disabled="submitted"
+                      >
+                        {{ item.id_caracteristica.nombre }}
+                      </b-switch>
+                    </div>
+                  </div>
+                </b-field>
+
+                <h6 class="title is-6">
+                  Otros
+                </h6>
+                <b-field
+                  grouped
+                  group-multiline
+                  class="mb-4"
+                >
+                  <div
+                    v-for="item in caracteristicasComodidades.filter(c => c.id_grupo_caracteristica == null)"
+                    :key="item.id"
+                    class="field"
+                  >
+                    <div v-if="isEdificio">
+                      <b-switch
+                        v-model="caracteristicasDepto[item.id]"
+                        :disabled="submitted"
+                      >
+                        {{ item.id_caracteristica.nombre }}
+                      </b-switch>
+                    </div>
+                    <div v-else>
+                      <b-switch
+                        v-model="caracteristicas[item.id]"
+                        :disabled="submitted"
+                      >
+                        {{ item.id_caracteristica.nombre }}
+                      </b-switch>
+                    </div>
+                  </div>
+                </b-field>
+              </div>
+            </b-step-item>
+
+            <b-step-item
+              label=""
+              :clickable="true"
+            >
+              <h3 class="title mb-5 is-3">
+                Descripción del Inmueble (opcional)
+              </h3>
+
+              <b-field
+                v-if="!isEdificio"
+                label="Descripción"
+              >
+                <b-input
+                  v-model="form.id_inmueble.descripcion"
+                  :disabled="submitted"
+                  type="textarea"
+                />
+              </b-field>
+
+              <b-field
+                v-if="isEdificio"
+                label="Descripción"
+              >
+                <b-input
+                  v-model="form.unidades[0].id_inmueble.descripcion"
+                  :disabled="submitted"
+                  type="textarea"
+                />
+              </b-field>
+            </b-step-item>
+
+            <b-step-item
+              label=""
+              :clickable="true"
+            >
+              <h3 class="title mb-5 is-3">
+                ¡Lo estás haciendo genial, {{ user.id_persona.nombre }}!
+              </h3>
+              <h4 class="subtitle is-4">Antes de finalizar el registro de tu inmueble podés hacer una revisión o editarlo posteriormente.</h4>
+              <b-button
+                :disabled="submitted"
+                size="is-large"
+                type="is-link"
+                native-type="button"
+                @click="activeStep = 0"
+              >
+                Revisar desde el comienzo
+              </b-button>
+
+              <div
+                class="is-divider"
+                data-content="O"
+              />
+
+              <b-button
+                :disabled="submitted"
+                native-type="button"
+                size="is-large"
+                :type="[{ 'is-primary': true }, { 'is-loading': submitted }]"
+                @click="handleSubmitForm"
+              >
+                Registrar Inmueble
+              </b-button>
+            </b-step-item>
+
+            <template
+              slot="navigation"
+              slot-scope="{previous, next}"
+            >
+              <div class="level is-responsive">
+                <div class="level-left">
+                  <b-button
+                    v-if="activeStep > 0"
+                    :disabled="previous.disabled"
+                    icon-pack="fas"
+                    icon-left="chevron-left"
+                    type="is-text"
+                    @click.prevent="handlePreviousStep(previous)"
+                  >
+                    Anterior
+                  </b-button>
+                  <b-button
+                    v-if="activeStep === 0"
+                    icon-pack="fas"
+                    icon-left="chevron-left"
+                    type="is-text"
+                    @click.prevent="$router.push({ name: 'Mis Inmuebles' })"
+                  >
+                    Volver a "Mis Inmuebles"
+                  </b-button>
+                </div>
+                <div class="level-right">
+                  <b-button
+                    :disabled="next.disabled"
+                    icon-pack="fas"
+                    icon-right="chevron-right"
+                    type="is-primary"
+                    @click.prevent="handleNextStep(next)"
+                  >
+                    Siguiente
+                  </b-button>
+                </div>
+              </div>
+            </template>
+          </b-steps>
+        </div>
+      </div>
+    </form>
+  </div>
+</template>
+
+<script>
+import { alertErrorMessage, alertSuccessMessage, deepClone, getSavedState, deleteSavedState, saveState } from "@/utilities/helpers"
+import { authComputed } from "@/store/helpers"
+import { caracteristicasTipoInmuebleComputed, caracteristicasTipoInmuebleMethods, formatosComputed, formatosMethods, inmueblesComputed, inmueblesMethods } from "@mvp/store/helpers"
+import { dz } from "@/utilities/mixins/dz"
+import { gmaps } from "@/utilities/mixins/gmaps"
+import { documentsMethods, photosMethods } from "@/store/helpers"
+
+import app from "@/app"
+import store from "@/store"
+
+import vue2Dropzone from "vue2-dropzone"
+import "vue2-dropzone/dist/vue2Dropzone.min.css"
+
+import Form from "@/utilities/Form"
+
+var csrfToken = document.head.querySelector("meta[name=\"csrf-token\"]").content
+
+var fields = deepClone(store.state.inmuebles.initialState.one)
+fields.unidades.push(deepClone(store.state.unidades.initialState.one))
+
+var token = getSavedState("auth.token")
+
+export default {
+    components: {
+        VueDropzone: vue2Dropzone
+    },
+
+    mixins: [dz, gmaps],
+
+    data() {
+        return {
+            action: app.apiUrl + "/inmuebles",
+            activeStep: 0,
+            caracteristicas: [],
+            caracteristicasDepto: [],
+            direccion: "",
+            dzDocumentsOptions: {
+                addRemoveLinks: true,
+                autoProcessQueue: false,
+                dictDefaultMessage: "<i class='fa fa-cloud-upload'></i><br/>Hacé click o arrastrá una o más documentos hacía acá",
+                headers: {
+                    "X-CSRF-TOKEN": csrfToken,
+                    "Authorization": "Bearer " + token
+                },
+                maxFiles: 4,
+                maxFilesize: 20,
+                method: "put",
+                parallelUploads: 4,
+                paramName: "documentos",
+                uploadMultiple: true,
+                url: app.apiUrl + "/inmuebles",
+            },
+            form: new Form(fields),
+            inmueblePadre: null,
+            isDestroying: false,
+            method: "post",
+            nuevoInmueble: "",
+            prepared: false,
+            submitted: false,
+            title: "Comencemos a registrar tu Inmueble",
+            url: app.apiUrl + "/inmuebles"
+        }
+    },
+
+    computed: {
+        ...authComputed,
+        ...caracteristicasTipoInmuebleComputed,
+        ...formatosComputed,
+        ...inmueblesComputed,
+
+        addressForm() {
+            return this.form.id_direccion
+        },
+
+        caracteristicasAmenities() {
+            var caracteristicas = this.allCaracteristicasTipoInmueble.filter(c => c.id_tipo_inmueble == this.form.id_inmueble.id_tipo_inmueble && c.id_tipo_caracteristica == 2)
+
+            return caracteristicas
+        },
+
+        caracteristicasComodidades() {
+            var caracteristicas
+
+            if (this.form.id_inmueble.id_tipo_inmueble == "1" && this.form.unidades[0].id_inmueble) {
+                caracteristicas = this.allCaracteristicasTipoInmueble.filter(c => c.id_tipo_inmueble == this.form.unidades[0].id_inmueble.id_tipo_inmueble && c.id_tipo_caracteristica == 2)
+            } else {
+                caracteristicas = this.allCaracteristicasTipoInmueble.filter(c => c.id_tipo_inmueble == this.form.id_inmueble.id_tipo_inmueble && c.id_tipo_caracteristica == 2)
+            }
+
+            return caracteristicas
+        },
+
+        caracteristicasPersonal() {
+            var caracteristicas = this.allCaracteristicasTipoInmueble.filter(c => c.id_tipo_inmueble == 1 && c.id_tipo_caracteristica == 3)
+
+            return caracteristicas
+        },
+
+        caracteristicasReglamentoPropiedad() {
+            var caracteristicas = this.allCaracteristicasTipoInmueble.filter(c => c.id_tipo_inmueble == 1 && c.id_tipo_caracteristica == 5)
+
+            return caracteristicas
+        },
+
+        formatosInmueble() {
+            return this.allFormatos.map(item => { return { id: item.id, formato: item.formato }})
+                .filter(i => this.form.formatos.includes(i.id))
+        },
+
+        isEdificio() {
+            return this.form.id_inmueble.id_tipo_inmueble === "1"
+        },
+
+        pickedAddressComponents() {
+            return {
+                street_number: ["numeracion", "short_name"],
+                route: ["calle_principal", "long_name"],
+                administrative_area_level_2: ["ciudad", "long_name"],
+                administrative_area_level_1: ["departamento", "long_name"],
+            }
+        }
+    },
+
+    watch: {
+        activeStep (step) {
+            if (step === 2) {
+                this.initMap("map", { center: { lat: this.form.id_direccion.latitud, lng: this.form.id_direccion.longitud }, zoom: 14 })
+
+                this.formatDireccion()
+
+                this.fetchAllInmuebles({ direccion: this.direccion, tipoListado: "TodosInmuebles" })
+                    .then(value => {
+                        console.log(value.data)
+                        if (value.data) {
+                            this.$refs.nuevoRegistro.value = ""
+                        }
+                    })
+            }
+        },
+
+        "form.id_inmueble.id_tipo_inmueble" (value) {
+            if (value == "1") {
+                this.form.unidades[0].id_inmueble.id_tipo_inmueble = 5
+
+                if (this.form.modalidad_propiedad == "UNICO_PROPIETARIO") {
+                    this.form.id_propietario_referente = this.$store.state.auth.user.id_persona.id
+                    this.form.unidades[0].id_propietario_referente = this.$store.state.auth.user.id_persona.id
+                } else {
+                    this.form.id_propietario_referente = ""
+                    this.form.unidades[0].id_propietario_referente = this.$store.state.auth.user.id_persona.id
+                }
+            } else {
+                this.form.id_propietario_referente = this.$store.state.auth.user.id_persona.id
+            }
+        },
+
+        "form.id_inmueble_padre" (value) {
+            if (value) {
+                this.inmueblePadre = this.allInmuebles.find(inmueble => inmueble.id == value)
+
+                this.form.cant_pisos = this.inmueblePadre.cant_pisos
+                this.form.descripcion = this.inmueblePadre.descripcion
+                this.form.divisible_en_unidades = this.inmueblePadre.divisible_en_unidades
+                this.form.formatos = this.inmueblePadre.formatos.map(item => { return item.id })
+
+                this.form.id_inmueble.id_tipo_inmueble = this.inmueblePadre.id_inmueble.id_tipo_inmueble.id.toString()
+                this.form.modalidad_propiedad = this.inmueblePadre.modalidad == "Único Propietario" ? "UNICO_PROPIETARIO" : "EN_CONDOMINIO"
+                this.form.nombre = this.inmueblePadre.nombre
+
+                this.allCaracteristicasTipoInmueble.forEach(item => {
+                    if (this.inmueblePadre.id_inmueble.caracteristicas.find(c => c.id == item.id_caracteristica.id)) {
+                        this.caracteristicas[item.id_caracteristica.id] = true
+                    }
+                })
+
+                if (this.inmueblePadre.fotos) {
+                    this.dzUnfeaturedPhotosMounted(this.inmueblePadre.fotos)
+                }
+
+                if (this.inmueblePadre.id_inmueble.documentos) {
+                    this.dzDocumentsMounted(this.inmueblePadre.id_inmueble.documentos)
+                }
+            }
+        },
+
+        "form.modalidad_propiedad" (value) {
+            if (value == "UNICO_PROPIETARIO") {
+                this.form.id_propietario_referente = this.$store.state.auth.user.id_persona.id
+                this.form.unidades[0].id_propietario_referente = this.$store.state.auth.user.id_persona.id
+            } else {
+                this.form.id_propietario_referente = ""
+                this.form.unidades[0].id_propietario_referente = this.$store.state.auth.user.id_persona.id
+            }
+        },
+
+        //geolocation: {
+        //handler (value) {
+        //this.formatDireccion()
+
+        //this.fetchAllInmuebles({ direccion: this.direccion, tipoListado: "TodosInmuebles" }) 
+        //},
+        //deep: true,
+        //}
+
+        "$route" (value) {
+            if (value.name === "Crear Inmueble") {
+                this.prepare()
+            }
+        }
+    },
+
+    mounted() {
+        //setInterval(()=> {
+        //this.handleCaracteristicas()
+        //saveState("nuevoInmueble", this.form, true)
+
+        //this.$buefy.notification.open({
+        //message: "Tus cambios fueron guardados",
+        //position: "is-bottom",
+        //type: "is-success"
+        //})
+        //}, 5000)
+
+        //if (getSavedState("nuevoInmueble")) {
+        //return this.$swal({
+        //title: "¿Retomar publicación",
+        //html: "Ya existe una publicación en curso que podés continuar editando. ¿Querés retomarla?",
+        //type: "warning",
+        //showCancelButton: true,
+        //cancelButtonText: "No, quiero empezar de nuevo",
+        //confirmButtonText: "Sí, dale",
+        //showLoaderOnConfirm: true,
+        //preConfirm: ()=> {
+        //this.form = new Form(getSavedState("nuevoInmueble"))
+        //},
+        //allowOutsideClick: false,
+        //})
+        //.then(result => {
+        //var dismiss = result.dismiss
+        //if (dismiss) {
+        //return null
+        //}
+        //})
+        //.catch(error => {
+        //return alertErrorMessage("Ups...", error.data.message||error.message)
+        //})
+        //}
+
+        this.initMap("map", { center: this.geolocation, zoom: 14 })
+        this.initAutocomplete("autocomplete", { types: ["geocode"] })
+    },
+
+    beforeDestroy() {
+        this.isDestroying = true
+    },
+
+    created() {
+        return this.prepare().then(this.prepared = true)
+    },
+
+    methods: {
+        ...caracteristicasTipoInmuebleMethods,
+        ...documentsMethods,
+        ...formatosMethods,
+        ...inmueblesMethods,
+        ...photosMethods,
+
+        dzDocumentsSuccess() {
+            alertSuccessMessage(this.title, "Tu inmueble fue publicado.")
+
+            //if (this.form.id_inmueble.id_tipo_inmueble == "1") {
+            //this.$router.push({ name: "Fotos Unidad", params: { id: this.nuevoInmueble.id_unidad.id }})
+            //} else {
+            //this.$router.push({ name: "Fotos Inmueble", params: { id: this.nuevoInmueble.id }})
+            //}
+
+            this.$router.push({ name: "Mis Inmuebles" })
+
+            return this.submitted = false
+        },
+
+        formatDireccion() {
+            this.direccion = this.form.id_direccion.calle_principal + "," + this.form.id_direccion.numeracion + "," + this.form.id_direccion.calle_secundaria
+        },
+
+        getErrorMessage(fields) {
+            if (this.form.errors.has(fields[0])||this.$validator.errors.has(fields[1])) {
+                return this.form.errors.get(fields[0])||this.$validator.errors.first(fields[1])
+            }
+        },
+
+        handleCaracteristicas() {
+            var caracteristica, nonEmptyCaracteristicas = []
+
+            this.caracteristicas.forEach((v, k) => {
+                caracteristica = this.allCaracteristicasTipoInmueble.find(c => c.id === k)               
+
+                if (caracteristica.enum_tipo_campo === "number") {
+                    caracteristica.id_caracteristica.cantidad = v
+                    nonEmptyCaracteristicas.push(caracteristica)
+                } else {
+                    caracteristica.id_caracteristica.cantidad = null
+                    nonEmptyCaracteristicas.push(caracteristica)
+                }
+            })
+
+            this.form.caracteristicas = nonEmptyCaracteristicas
+
+            var caracteristicaDepto, nonEmptyCaracteristicasDepto = []
+
+            this.caracteristicasDepto.forEach((v, k) => {
+                caracteristicaDepto = this.allCaracteristicasTipoInmueble.find(c => c.id === k)
+
+                if (caracteristicaDepto.enum_tipo_campo === "number") {
+                    caracteristicaDepto.id_caracteristica.cantidad = v
+                    nonEmptyCaracteristicasDepto.push(caracteristicaDepto)
+                } else {
+                    caracteristicaDepto.id_caracteristica.cantidad = null
+                    nonEmptyCaracteristicasDepto.push(caracteristicaDepto)
+                }
+            })
+
+            this.form.unidades[0].caracteristicas = nonEmptyCaracteristicasDepto
+        },
+
+        handleNextStep(next) {
+            switch (this.activeStep) {
+            case 0:
+                return next.action()
+            case 1:
+                return this.validateAll(["calle_principal"], next)
+            case 2:
+                return next.action()
+            case 3:
+                return this.validateAll(["nombre", "formatos", "cant_pisos"], next)
+            case 4:
+                return next.action()
+            case 5:
+                return this.validateAll(["piso", "numero", "area", "id_formato_inmueble"], next)
+            case 6:
+                return next.action()
+            case 7:
+                return next.action()
+            default:
+                return false
+            }
+        },
+
+        handlePreviousStep(previous) {
+            return previous.action()
+        },
+
+        handleSubmitForm() {
+            this.submitted = true
+
+            this.handleCaracteristicas()
+
+            this.form.documents = []
+
+            return this.form.post(this.action)
+                .then(response => {
+                    this.nuevoInmueble = response.data
+                    this.url = this.action + "/" + this.nuevoInmueble.id
+
+                    return this.dzDocumentsProcessQueue()
+                })
+                .catch(error => {
+                    var message = error.data.message||error.message||error
+                    if (error.status > 422) {
+                        alertErrorMessage(this.title, message)
+                    }
+
+                    return this.submitted = false
+                })
+        },
+
+        updateAddressAndMapFormsCoordinates(coordinates) {
+            this.form.id_direccion.latitud = coordinates.lat
+            this.form.id_direccion.longitud = coordinates.lng
+        },
+
+        prepare() {
+            window.$(()=> {
+                this.geolocate()
+                .then(coordinates => {
+                    if (coordinates) {
+                        this.form.id_direccion.latitud = coordinates.lat
+                        this.form.id_direccion.longitud = coordinates.lng
+                    }
+
+                    this.initMap("map", { center: { lat: this.form.id_direccion.latitud, lng: this.form.id_direccion.longitud }, zoom: 14 })
+
+                    return coordinates
+                })
+                .catch(error => {
+                    alertErrorMessage(this.title, "No se ha podido geolocalizar la ubicación.")
+                })
+            })
+
+            this.form.id_propietario_referente = this.$store.state.auth.user.id_persona.id
+            this.form.unidades[0].id_inmueble.id_tipo_inmueble = 5
+            this.form.unidades[0].id_propietario_referente = this.$store.state.auth.user.id_persona.id
+
+            var caracteristicas = this.fetchAllCaracteristicasTipoInmueble()
+            var formatos = this.fetchAllFormatos()
+
+            return Promise.all([caracteristicas, formatos])
+        },
+
+        setFieldType(fields) {
+            if (this.form.errors.has(fields[0]) || this.$validator.errors.has(fields[1])) {
+                return "is-danger"
+            }
+        },
+
+        validateAll(fields, next) {
+            return this.$validator.validateAll(fields)
+                .then(result => {
+                    if (result) {
+                        return next.action()
+                    }
+
+                    return false
+                })
+                .catch(false) 
+        }
+    }
+}
+</script>
