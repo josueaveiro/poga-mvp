@@ -77,6 +77,7 @@
             </b-dropdown-item>
 
             <b-dropdown-item
+              v-if="user.role_id == 4"
               has-link="true"
               aria-role="listitem"
             >
@@ -132,6 +133,8 @@
 </template>
 
 <script>
+import { authComputed } from "@/store/helpers"
+
 import moment from "moment"
 
 export default {
@@ -144,6 +147,10 @@ export default {
             defaultOpenedDetails: [1],
             showDetailIcon: true
         }
+    },
+
+    computed: {
+        ...authComputed
     },
 
     methods: {

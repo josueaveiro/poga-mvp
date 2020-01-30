@@ -25,16 +25,16 @@
             <b-step-item
               label=""
             >
-              <h5 class="subtitle is-4">
+              <h3 class="title is-3">
                 Características generales del Departamento
-              </h5>
+              </h3>
 
               <b-field
                 grouped
                 group-multiline
               >
                 <b-field
-                  label="Piso"
+                  label="Piso *"
                   :message="getErrorMessage(['piso', 'piso'])"
                   :type="setFieldType(['piso', 'piso'])"
                 >
@@ -51,7 +51,7 @@
                 </b-field>
 
                 <b-field
-                  label="Número"
+                  label="Número *"
                   :message="getErrorMessage(['numero', 'numero'])"
                   :type="setFieldType(['numero', 'numero'])"
                 >
@@ -67,7 +67,7 @@
               </b-field>
 
               <b-field
-                label="Metros cuadrados"
+                label="Metros cuadrados construidos *"
                 :message="getErrorMessage(['area', 'area'])"
                 :type="setFieldType(['area', 'area'])"
               >
@@ -83,7 +83,7 @@
               </b-field>
 
               <b-field
-                label="Formato *"
+                label="Departamento para *"
                 :message="getErrorMessage(['id_formato_inmueble', 'id_formato_inmueble'])"
                 :type="setFieldType(['id_formato_inmueble', 'id_formato_inmueble'])"
               >
@@ -130,9 +130,6 @@
               <h3 class="title mb-5 is-3">
                 ¿Qué comodidades ofrecés?
               </h3>
-              <h5 class="subtitle mb-4 is-4">
-                Estos son las comodidades que los inquilinos esperan encontrar normalmente, pero puedes añadir aún más en otro momento.
-              </h5>
 
               <div class="content">
                 <h6 class="title is-6">
@@ -214,14 +211,8 @@
               :clickable="true"
             >
               <h3 class="title mb-5 is-3">
-                Agregá una descripción y fotos
+                Descripción del {{ oneUnidad.id_inmueble.id_tipo_inmueble.tipo }} (opcional)
               </h3>
-              <h6 class="title is-6">
-                PASO 2 (opcional)
-              </h6>
-              <h5 class="subtitle is-4">
-                Texto descriptivo...
-              </h5>
 
               <b-field
                 label="Descripción"
@@ -230,19 +221,6 @@
                   v-model="form.id_inmueble.descripcion"
                   :disabled="submitted"
                   type="textarea"
-                />
-              </b-field>
-
-              <b-field label="Fotos">
-                <vue-dropzone
-                  id="dzUnfeaturedPhotos"
-                  ref="dzUnfeaturedPhotos"
-                  :options="dzUnfeaturedPhotosOptions"
-                  @vdropzone-error="dzUnfeaturedPhotosError"
-                  @vdropzone-removed-file="dzUnfeaturedPhotosRemovedFile"
-                  @vdropzone-processing="dzUnfeaturedPhotosProcessing"
-                  @vdropzone-success-multiple="dzUnfeaturedPhotosSuccess"
-                  @vdropzone-upload-progress="dzUnfeaturedPhotosUploadProgress"
                 />
               </b-field>
             </b-step-item>
@@ -254,9 +232,7 @@
               <h3 class="title mb-5 is-3">
                 ¡Lo estás haciendo genial, {{ user.id_persona.nombre }}!
               </h3>
-              <h5 class="subtitle mb-5 is-4">
-                Texto descriptivo...
-              </h5>
+              <h4 class="subtitle is-4">Antes de finalizar la actualización de tu departamento podés hacer una revisión o editarlo posteriormente.</h4>
               <b-button
                 :disabled="submitted"
                 size="is-large"
@@ -264,7 +240,7 @@
                 native-type="button"
                 @click="activeStep = 0"
               >
-                Revisar
+                Revisar desde el comienzo
               </b-button>
 
               <div
@@ -279,7 +255,7 @@
                 :type="[{ 'is-primary': true }, { 'is-loading': submitted }]"
                 @click="handleSubmitForm"
               >
-                Actualizar {{ oneUnidad.id_inmueble.id_tipo_inmueble.tipo }}
+                Actualizar el {{ oneUnidad.id_inmueble.id_tipo_inmueble.tipo }}
               </b-button>
             </b-step-item>
 

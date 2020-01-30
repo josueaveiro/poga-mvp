@@ -34,14 +34,13 @@
             <b-step-item
               label=""
             >
-              <h5 class="subtitle is-4">
+              <h3 class="title is-3">
                 Características generales del Departamento
-              </h5>
+              </h3>
 
               <b-field
                 grouped
                 group-multiline
-              >
                 <b-field
                   label="Piso"
                   :message="getErrorMessage(['piso', 'piso'])"
@@ -76,7 +75,7 @@
               </b-field>
 
               <b-field
-                label="Metros cuadrados"
+                label="Metros cuadrados construidos"
                 :message="getErrorMessage(['area', 'area'])"
                 :type="setFieldType(['area', 'area'])"
               >
@@ -92,7 +91,7 @@
               </b-field>
 
               <b-field
-                label="Formato *"
+                label="Departamento para"
                 :message="getErrorMessage(['id_formato_inmueble', 'id_formato_inmueble'])"
                 :type="setFieldType(['id_formato_inmueble', 'id_formato_inmueble'])"
               >
@@ -121,11 +120,11 @@
                 class="field"
               >
                 <b-field :label="item.id_caracteristica.nombre">
-                  <b-numberinput
+                  <b-input
                     v-model="form.id_inmueble.caracteristicas[item.id_caracteristica.id]"
                     :name="'id_inmueble.caracteristicas[' + item.id_caracteristica.id + ']'"
                     :disabled="true"
-                    min="0"
+                    type="number"
                     icon-pack="fas"
                   />
                 </b-field>
@@ -223,7 +222,7 @@
               :clickable="true"
             >
               <h3 class="title mb-5 is-3">
-                Descripción
+                Descripción del Departamento
               </h3>
               <b-field
                 label="Descripción"
@@ -236,48 +235,14 @@
               </b-field>
             </b-step-item>
 
-            <b-step-item
-              label=""
-              :clickable="true"
-            >
-              <h3 class="title mb-5 is-3">
-                ¡Lo estás haciendo genial, {{ user.id_persona.nombre }}!
-              </h3>
-              <h5 class="subtitle mb-5 is-4">
-                Texto descriptivo...
-              </h5>
-
-              <b-button
-                size="is-large"
-                type="is-link"
-                native-type="button"
-                @click="activeStep = 0"
-              >
-                Revisar desde el principio
-              </b-button>
-
-              <div
-                class="is-divider"
-                data-content="O"
-              />
-
-              <b-button
-                native-type="button"
-                size="is-large"
-                type="is-primary"
-                @click="$router.push({ name: 'Mis Inmuebles' })"
-              >
-                Volver a "Mis Inmuebles"
-              </b-button>
-            </b-step-item>
-
             <template
               slot="navigation"
               slot-scope="{previous, next}"
             >
-              <div class="level">
+              <div class="level is-responsive">
                 <div class="level-left">
                   <b-button
+                    v-if="activeStep > 0"
                     :disabled="previous.disabled"
                     icon-pack="fas"
                     icon-left="chevron-left"
@@ -286,9 +251,19 @@
                   >
                     Anterior
                   </b-button>
+                  <b-button
+                    v-if="activeStep === 0"
+                    icon-pack="fas"
+                    icon-left="chevron-left"
+                    type="is-text"
+                    @click.prevent="$router.push({ name: 'Mis Inmuebles '})"
+                  >
+                    Volver a "Mis Inmuebles"
+                  </b-button>
                 </div>
                 <div class="level-right">
                   <b-button
+                    v-if="activeStep !== 2"
                     :disabled="next.disabled"
                     icon-pack="fas"
                     icon-right="chevron-right"
@@ -296,6 +271,15 @@
                     @click.prevent="handleNextStep(next)"
                   >
                     Siguiente
+                  </b-button>
+                  <b-button
+                    v-if="activeStep === 2"
+                    icon-pack="fas"
+                    icon-right="chevron-right"
+                    type="is-primary"
+                    @click.prevent="$router.push({ name: 'Mis Inmuebles' })"
+                  >
+                    Volver a "Mis Inmuebles"
                   </b-button>
                 </div>
               </div>

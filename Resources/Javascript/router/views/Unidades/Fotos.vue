@@ -19,6 +19,7 @@
               @vdropzone-upload-progress="dzFeaturedPhotoUploadProgress"
             />
           </b-field>
+          <p class="mb-4">Puedes subir una foto de hasta 8Mb.</p>
 
           <b-field label="Galería de fotos">
             <vue-dropzone
@@ -32,6 +33,7 @@
               @vdropzone-upload-progress="dzUnfeaturedPhotosUploadProgress"
             />
           </b-field>
+          <p class="mb-4">Puedes subir hasta 8 fotos de hasta 8Mb cada una.</p>
 
           <b-button
             type="is-primary"

@@ -105,9 +105,6 @@
               <h3 class="title mb-5 is-3">
                 ¿Dónde se encuentra ubicado el inmueble?
               </h3>
-              <h5 class="subtitle is-4">
-                Los inquilinos solo podrán ver tu dirección exacta después de reservar.
-              </h5>
 
               <b-field>
                 <b-button
@@ -190,9 +187,7 @@
               <h3 class="subtitle is-3">
                 ¿Está el marcador en el lugar correcto?
               </h3>
-              <h5 class="subtitle is-4">
-                Si es necesario, podés ajustar el mapa para que el marcador esté en la ubicación correcta.
-              </h5>
+              <h4 class="subtitle is-4">Si es necesario, podés arrastrar el marcador hasta la ubicación correcta.</h4>
 
               <p class="mb-3">
                 {{ autocompleteSearch }}
@@ -212,7 +207,7 @@
               </h3>
 
               <b-field
-                label="Nombre"
+                label="Nombre del edificio"
                 :message="getErrorMessage(['nombre', 'nombre'])"
                 :type="setFieldType(['nombre', 'nombre'])"
               >
@@ -226,7 +221,7 @@
               </b-field>
 
               <b-field
-                label="Formatos *"
+                label="Edificio para *"
                 :message="getErrorMessage(['formatos', 'formatos'])"
                 :type="setFieldType(['formatos', 'formatos'])"
               >
@@ -367,9 +362,6 @@
               <h3 class="title mb-5 is-3">
                 ¿Qué comodidades ofrecés?
               </h3>
-              <h5 class="subtitle mb-4 is-4">
-                Estos son las comodidades que los inquilinos esperan encontrar normalmente, pero puedes añadir aún más en otro momento.
-              </h5>
 
               <div class="content">
                 <div v-if="!isEdificio">
@@ -465,14 +457,8 @@
               :clickable="true"
             >
               <h3 class="title mb-5 is-3">
-                Agregá fotos
+                Descripción del Inmueble (opcional)
               </h3>
-              <h6 class="title is-6">
-                PASO 2 (opcional)
-              </h6>
-              <h5 class="subtitle is-4">
-                Texto descriptivo...
-              </h5>
 
               <b-field
                 v-if="!isEdificio"
@@ -484,19 +470,6 @@
                   type="textarea"
                 />
               </b-field>
-
-              <b-field label="Fotos">
-                <vue-dropzone
-                  id="dzUnfeaturedPhotos"
-                  ref="dzUnfeaturedPhotos"
-                  :options="dzUnfeaturedPhotosOptions"
-                  @vdropzone-error="dzUnfeaturedPhotosError"
-                  @vdropzone-removed-file="dzUnfeaturedPhotosRemovedFile"
-                  @vdropzone-processing="dzUnfeaturedPhotosProcessing"
-                  @vdropzone-success-multiple="dzUnfeaturedPhotosSuccess"
-                  @vdropzone-upload-progress="dzUnfeaturedPhotosUploadProgress"
-                />
-              </b-field>
             </b-step-item>
 
             <b-step-item
@@ -506,9 +479,7 @@
               <h3 class="title mb-5 is-3">
                 ¡Lo estás haciendo genial, {{ user.id_persona.nombre }}!
               </h3>
-              <h5 class="subtitle mb-5 is-4">
-                Texto descriptivo...
-              </h5>
+              <h4 class="subtitle is-4">Antes de finalizar la actualización de tu inmueble podés hacer una revisión o editarlo posteriormente.</h4>
               <b-button
                 :disabled="submitted"
                 size="is-large"
@@ -516,7 +487,7 @@
                 native-type="button"
                 @click="activeStep = 0"
               >
-                Revisar
+                Revisar desde el comienzo
               </b-button>
 
               <div
@@ -531,7 +502,7 @@
                 :type="[{ 'is-primary': true }, { 'is-loading': submitted }]"
                 @click="handleSubmitForm"
               >
-                Actualiza un Inmueble
+                Actualiza el Inmueble
               </b-button>
             </b-step-item>
 
@@ -539,9 +510,10 @@
               slot="navigation"
               slot-scope="{previous, next}"
             >
-              <div class="level">
+              <div class="level is-responsive">
                 <div class="level-left">
                   <b-button
+                    v-if="activeStep > 0"
                     :disabled="previous.disabled"
                     icon-pack="fas"
                     icon-left="chevron-left"
@@ -549,6 +521,15 @@
                     @click.prevent="handlePreviousStep(previous)"
                   >
                     Anterior
+                  </b-button>
+                  <b-button
+                    v-if="activeStep === 0"
+                    icon-pack="fas"
+                    icon-left="chevron-left"
+                    type="is-text"
+                    @click.prevent="$router.push({ name: 'Mis Inmuebles' })"
+                  >
+                    Volver a "Mis Inmuebles"
                   </b-button>
                 </div>
                 <div class="level-right">
@@ -705,6 +686,13 @@ export default {
         "$route" (value) {
             if (value.name === "Editar Inmueble") {
                 this.prepare()
+            }
+        },
+
+        activeStep (value) {
+console.log(value)
+            if (value === 1)  {
+                this.initMap("map", { center: this.geolocation, zoom: 14 })
             }
         }
     },

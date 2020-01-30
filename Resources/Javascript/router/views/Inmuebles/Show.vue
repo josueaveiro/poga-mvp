@@ -55,59 +55,6 @@
               :clickable="true"
             >
               <h3 class="title mb-5 is-3">
-                Visualiza la información de tu Inmueble
-              </h3>
-              <h5 class="subtitle is-4">
-                Tipo de Inmueble
-              </h5>
-
-              <b-field>
-                <b-radio-button
-                  v-model="form.id_inmueble.id_tipo_inmueble"
-                  :disabled="true"
-                  native-value="2"
-                >
-                  <span>Casa</span>
-                </b-radio-button>
-
-                <b-radio-button
-                  v-model="form.id_inmueble.id_tipo_inmueble"
-                  :disabled="true"
-                  native-value="1"
-                >
-                  <span>Departamento</span>
-                </b-radio-button>
-              </b-field>
-
-              <div v-show="form.id_inmueble.id_tipo_inmueble == 1">
-                <h5 class="subtitle is-4">
-                  Modalidad
-                </h5>
-                <b-field>
-                  <b-radio-button
-                    v-model="form.modalidad_propiedad"
-                    :disabled="true"
-                    native-value="EN_CONDOMINIO"
-                  >
-                    <span>En condominio</span>
-                  </b-radio-button>
-
-                  <b-radio-button
-                    v-model="form.modalidad_propiedad"
-                    :disabled="true"
-                    native-value="UNICO_PROPIETARIO"
-                  >
-                    <span>Único propietario</span>
-                  </b-radio-button>
-                </b-field>
-              </div>
-            </b-step-item>
-
-            <b-step-item
-              label=""
-              :clickable="true"
-            >
-              <h3 class="title mb-5 is-3">
                 Donde se encuentra ubicado el inmueble
               </h3>
 
@@ -178,7 +125,7 @@
               </h3>
 
               <b-field
-                label="Nombre"
+                label="Nombre del Inmueble"
               >
                 <b-input
                   v-model="form.nombre"
@@ -191,16 +138,16 @@
               </b-field>
 
               <b-field
-                label="Formatos"
+                label="Edificio para"
               >
-                <ul>
-                  <li
-                    v-for="item in form.formatos"
-                    :key="item.id"
-                  >
-                    {{ item.formato }}
-                  </li>
-                </ul>
+                <b-input
+                  :disabled="true"
+                  name="formatos"
+                  size="is-medium"
+                  type="text"
+                  placeholder="Edificio para"
+                  :value="form.formatos.map(item => { return item.formato }).join(',')"
+               />
               </b-field>
 
               <b-field
@@ -215,28 +162,37 @@
               <div class="is-divider" />
 
               <b-field label="Reglamento de propiedad">
-                <article
-                  v-for="documento in oneInmueble.id_inmueble.documentos"
-                  class="media"
-                >
-                  <figure class="media-left">
-                    <p class="image is-64x64">
-                      <img :src="documento.thumbnail">
-                    </p>
-                  </figure>
-                  <div class="media-content">
-                    <div class="content">
-                      <p>
-                        <a
-                          :href="documento.url"
-                          target="_blanck"
-                        ><strong>{{ documento.name }} </strong></a> <small>Subido el</small> <small>{{ moment(documento.created_at).format("DD/MM/YYYY") }}</small>
-                        <br>
-                        Documento en formato PDF.
+                <div v-if="oneInmueble.id_inmueble.documentos.length > 0" class="content">
+                  <article
+                    v-for="documento in oneInmueble.id_inmueble.documentos"
+                    class="media"
+                  >
+                    <figure class="media-left">
+                      <p class="image is-64x64">
+                        <img :src="documento.thumbnail">
                       </p>
+                    </figure>
+                    <div class="media-content">
+                      <div class="content">
+                        <p>
+                          <a
+                            :href="documento.url"
+                            target="_blanck"
+                          ><strong>{{ documento.name }} </strong></a> <small>Subido el</small> <small>{{ moment(documento.created_at).format("DD/MM/YYYY") }}</small>
+                          <br>
+                          Documento en formato PDF.
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                </article>
+                  </article>
+                </div>
+  
+                <div
+                  v-else
+                  class="content has-text-grey"
+                 >
+                  <p>No hay documentos para descargar.</p>
+                </div>
               </b-field>
             </b-step-item>
 
@@ -370,59 +326,20 @@
               label=""
               :clickable="true"
             >
-              <h5 class="title mb-5 is-5">
-                Descripción
-              </h5>
-              <h5 class="subtitle mb-5 is-5">
-                {{ form.id_inmueble.descripcion }}
-              </h5>
+              <h3 class="title mb-5 is-3">
+                Descripción del Inmueble (opcional)
+              </h3>
 
-              <h5 class="title mb-5 is-5">
-                Galería de Fotos
-              </h5>
-              <b-field label="Fotos">
-                <b-carousel-list
-                  v-model="test"
-                  :data="fotos"
-                  :items-to-show="2"
-                >
-                  <template
-                    slot="item"
-                    slot-scope="props"
-                  >
-                    <div class="card">
-                      <div class="card-image">
-                        <figure class="image is-5by4">
-                          {{ props.list.url }}
-                        </figure>
-                      </div>
-                    </div>
-                  </template>
-                </b-carousel-list> 
+              <b-field
+                v-if="!isEdificio"
+                label="Descripción"
+              >
+                <b-input
+                  v-model="form.id_inmueble.descripcion"
+                  :disabled="true"
+                  type="textarea"
+                />
               </b-field>
-
-              <b-button
-                size="is-large"
-                type="is-link"
-                native-type="button"
-                @click="activeStep = 0"
-              >
-                Revisar desde el principio
-              </b-button>
-
-              <div
-                class="is-divider"
-                data-content="O"
-              />
-
-              <b-button
-                native-type="button"
-                size="is-large"
-                type="is-primary"
-                @click="$router.push({ name: 'Mis Inmuebles' })"
-              >
-                Volver a "Mis Inmuebles"
-              </b-button>
             </b-step-item>
 
             <template
@@ -432,6 +349,7 @@
               <div class="level">
                 <div class="level-left">
                   <b-button
+                    v-if="activeStep > 0"
                     :disabled="previous.disabled"
                     icon-pack="fas"
                     icon-left="chevron-left"
@@ -440,16 +358,35 @@
                   >
                     Anterior
                   </b-button>
+                  <b-button
+                    v-if="activeStep === 0"
+                    :disabled="previous.disabled"
+                    icon-pack="fas"
+                    icon-left="chevron-left"
+                    type="is-text"
+                    @click.prevent="$router.push({ name: 'Mis Inmuebles' })"
+                  >
+                    Volver a "Mis Inmuebles"
+                  </b-button>
                 </div>
                 <div class="level-right">
                   <b-button
-                    :disabled="next.disabled"
+                    v-if="activeStep !== 3"
                     icon-pack="fas"
                     icon-right="chevron-right"
                     type="is-primary"
                     @click.prevent="handleNextStep(next)"
                   >
                     Siguiente
+                  </b-button>
+                  <b-button
+                    v-if="activeStep === 3"
+                    icon-pack="fas"
+                    icon-right="chevron-right"
+                    type="is-primary"
+                    @click.prevent="$router.push({ name: 'Mis Inmuebles' })"
+                  >
+                    Volver a "Mis Inmuebles"
                   </b-button>
                 </div>
               </div>

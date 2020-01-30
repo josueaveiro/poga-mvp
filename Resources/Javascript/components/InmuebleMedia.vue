@@ -22,6 +22,7 @@
         <nav class="level is-mobile">
           <div class="level-left">
             <RouterLink
+              v-if="user.role_id == 4"
               :to="{ name: 'Perfil Publico Inmueble', params: { id: item.id }}"
               class="level-item"
             >
@@ -34,12 +35,14 @@
               Ver detalles
             </RouterLink>
             <RouterLink
+              v-if="user.role_id == 4"
               :to="{ name: 'Fotos Inmueble', params: { id: item.id }}"
               class="level-item"
             >
               Agrega o actualiza Fotos
             </RouterLink>
             <RouterLink
+              v-if="user.role_id == 4"
               :to="{ name: 'Editar Inmueble', params: { id: item.id }}"
               class="level-item"
             >
@@ -53,7 +56,13 @@
 </template>
 
 <script>
+import { authComputed } from "@/store/helpers"
+
 export default {
-    props: ["item"]
+    props: ["item"],
+
+    computed: {
+        ...authComputed
+    }
 }
 </script>

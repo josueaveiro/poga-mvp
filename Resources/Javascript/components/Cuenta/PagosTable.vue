@@ -49,7 +49,7 @@
         sortable
       >
         <template>
-          {{ props.row.id_inmueble.nombre_y_apellidos.propietario_referente }}
+          {{ props.row.id_inmueble.nombre_y_apellidos_propietario_referente }}
         </template>
       </b-table-column>
 
