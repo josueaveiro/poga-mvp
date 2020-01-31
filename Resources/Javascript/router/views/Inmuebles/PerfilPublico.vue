@@ -83,13 +83,17 @@
               v-if="caracteristicasComodidades.filter(c => c.id_grupo_caracteristica == null).length > 0"
               class="mb-4"
             >
-              <b-tag
+              <div
                 v-for="item in caracteristicasComodidades.filter(c => c.id_grupo_caracteristica == null)"
                 :key="item.id"
-                class="is-primary"
               >
-                {{ item.id_caracteristica.nombre }}
-              </b-tag>
+                <b-tag
+                  v-if="form.id_inmueble.caracteristicas[getCaracteristicasIndex(item.id)]"
+                  class="is-primary mr-2"
+                >
+                  {{ form.id_inmueble.caracteristicas[getCaracteristicasIndex(item.id)].nombre }}
+                </b-tag>
+              </div>
             </b-taglist>
 
             <div
@@ -111,13 +115,17 @@
               v-if="caracteristicasComodidades.filter(c => c.id_grupo_caracteristica == 1).length > 0"
               class="mb-4"
             >
-              <b-tag
+              <div
                 v-for="item in caracteristicasComodidades.filter(c => c.id_grupo_caracteristica == 1)"
                 :key="item.id"
-                class="is-primary"
               >
-                {{ item.id_caracteristica.nombre }}
-              </b-tag>
+                <b-tag
+                  v-if="form.id_inmueble.caracteristicas[getCaracteristicasIndex(item.id_caracteristica.id)]"
+                  class="is-primary mr-2"
+                >
+                  {{ form.id_inmueble.caracteristicas[getCaracteristicasIndex(item.id_caracteristica.id)].nombre }}
+                </b-tag>
+              </div>
             </b-taglist>
 
             <div
@@ -128,7 +136,7 @@
             </div>
           </div>
 
-          <div v-if="!isEdificio">
+          <div>
             <h6 class="title is-6">
               Amoblamiento
             </h6>
@@ -136,13 +144,17 @@
               v-if="caracteristicasComodidades.filter(c => c.id_grupo_caracteristica == 2).length > 0"
               class="mb-4"
             >
-              <b-tag
+              <div
                 v-for="item in caracteristicasComodidades.filter(c => c.id_grupo_caracteristica == 2)"
                 :key="item.id"
-                class="is-primary"
               >
-                {{ item.id_caracteristica.nombre }}
-              </b-tag>
+                <b-tag
+                  v-if="form.id_inmueble.caracteristicas[getCaracteristicasIndex(item.id_caracteristica.id)]"
+                  class="is-primary mr-2"
+                >
+                  {{ form.id_inmueble.caracteristicas[getCaracteristicasIndex(item.id_caracteristica.id)].nombre }}
+                </b-tag>
+              </div>
             </b-taglist>
     
             <div
@@ -160,13 +172,17 @@
             v-if="caracteristicasComodidades.filter(c => c.id_grupo_caracteristica == null).length > 0"
             class="mb-4"
           >
-            <b-tag
+            <div
               v-for="item in caracteristicasComodidades.filter(c => c.id_grupo_caracteristica == null)"
               :key="item.id"
-              class="is-primary"
             >
-              {{ item.id_caracteristica.nombre }}
-            </b-tag>
+              <b-tag
+                v-if="form.id_inmueble.caracteristicas[getCaracteristicasIndex(item.id_caracteristica.id)]"
+                class="is-primary mr-2"
+              >
+                {{ form.id_inmueble.caracteristicas[getCaracteristicasIndex(item.id_caracteristica.id)].nombre }}
+              </b-tag>
+            </div>
           </b-taglist>
           <div
             v-else
@@ -228,7 +244,7 @@ export default {
         },
 
         caracteristicasComodidades() {
-            var caracteristicas = this.allCaracteristicasTipoInmueble.filter(c => c.id_tipo_caracteristica == 2)
+            var caracteristicas = this.allCaracteristicasTipoInmueble.filter(c => c.id_tipo_caracteristica == 2 && c.id_tipo_inmueble == this.oneInmueble.id_inmueble.id_tipo_inmueble.id)
 
             return caracteristicas
         },
@@ -273,8 +289,8 @@ export default {
         ...formatosMethods,
         ...inmueblesMethods,
 
-        getCaracteristicasIndex(index) {
-            return this.oneInmueble.id_inmueble.caracteristicas.findIndex(item => item.id === index)
+        getCaracteristicasIndex(id) {
+            return this.oneInmueble.id_inmueble.caracteristicas.findIndex(item => item.id === id)
         },
 
         initMap(el, options) {
@@ -310,7 +326,7 @@ export default {
                     numeracion: data.id_direccion.numeracion
                 },
                 id_inmueble: {
-                    caracteristicas: mapCaracteristicasTipoInmuebleList(this.allCaracteristicasTipoInmueble.filter(item => item.id_tipo_inmueble == data.id_inmueble.id_tipo_inmueble.id), data.id_inmueble.caracteristicas),
+                    caracteristicas: data.id_inmueble.caracteristicas,
                     descripcion: data.id_inmueble.descripcion,
                     id_tipo_inmueble: data.id_inmueble.id_tipo_inmueble.id.toString(),
                     solicitud_directa_inquilinos: data.id_inmueble.solicitud_directa_inquilinos,
@@ -333,19 +349,21 @@ export default {
             return Promise.all([inmueble, formatos])
                 .then(values => {
                     if (values[0]) {
-                        this.fetchAllCaracteristicasTipoInmueble({ id_tipo_inmueble: values[0].id_inmueble.id_tipo_inmueble.id })
+                        inmueble = values[0]
                     }
 
-                    return values[0]
+                    return this.fetchAllCaracteristicasTipoInmueble()
                 })
-                .then(inmueble => {
-                    this.form = new Form(this.mapFormData(inmueble))
+                .then(caracteristicasTipoInmueble => {
+                    if (caracteristicasTipoInmueble) {
+                        this.form = new Form(this.mapFormData(inmueble))
 
-                    window.$(()=> {
-                        this.initMap("map", { center: { lat: inmueble.id_direccion.latitud, lng: inmueble.id_direccion.longitud }, zoom: 14 })
-                    })
+                        window.$(()=> {
+                            this.initMap("map", { center: { lat: inmueble.id_direccion.latitud, lng: inmueble.id_direccion.longitud }, zoom: 14 })
+                        })
+                    }
 
-                    return inmueble
+                    return caracteristicasTipoInmueble
                 })
                 .catch(error => {
                     var message = error.data.message||error.message||error
