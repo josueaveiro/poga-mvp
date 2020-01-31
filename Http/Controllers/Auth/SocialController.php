@@ -3,7 +3,7 @@
 namespace App\Modules\Mvp\Http\Controllers\Auth;
 
 use App\Http\Controllers\Auth\SocialController as Controller;
-use App\Modules\Mvp\Mail\UsuarioRegistradoParaAdminPoga;
+use App\Modules\Mvp\Mail\UsuarioCreadoParaAdminPoga;
 use App\Modules\Mvp\Models\{ Persona, User };
 use App\Modules\Mvp\Notifications\UsuarioRegistrado;
 
@@ -49,7 +49,7 @@ class SocialController extends Controller
         if ($user->wasRecentlyCreated) {
 	    $user->notify(new UsuarioRegistrado($user));
 	
-            Mail::to(env('MAIL_ADMIN_ADDRESS'))->send(new UsuarioRegistradoParaAdminPoga($user));
+            Mail::to(env('MAIL_ADMIN_ADDRESS'))->send(new UsuarioCreadoParaAdminPoga($user));
 	}
     
         return $user;
