@@ -80,7 +80,7 @@
               Amenities
             </h4>
             <b-taglist
-              v-if="caracteristicasComodidades.filter(c => c.id_grupo_caracteristica == null).length > 0"
+              v-if="caracteristicasComodidades.filter(c => c.id_grupo_caracteristica == null)"
               class="mb-4"
             >
               <div
@@ -112,7 +112,7 @@
               Electrodomésticos
             </h6>
             <b-taglist
-              v-if="caracteristicasComodidades.filter(c => c.id_grupo_caracteristica == 1).length > 0"
+              v-if="caracteristicasComodidades.filter(c => c.id_grupo_caracteristica == 1)"
               class="mb-4"
             >
               <div
@@ -141,7 +141,7 @@
               Amoblamiento
             </h6>
             <b-taglist
-              v-if="caracteristicasComodidades.filter(c => c.id_grupo_caracteristica == 2).length > 0"
+              v-if="caracteristicasComodidades.filter(c => c.id_grupo_caracteristica == 2)"
               class="mb-4"
             >
               <div
@@ -169,7 +169,7 @@
             Otros
           </h6>
           <b-taglist
-            v-if="caracteristicasComodidades.filter(c => c.id_grupo_caracteristica == null).length > 0"
+            v-if="caracteristicasComodidades.filter(c => c.id_grupo_caracteristica == null)"
             class="mb-4"
           >
             <div

@@ -1,8 +1,16 @@
 <template>
-  <section class="bg-light">
-    <div class="columns is-gapless">
+  <main class="bg-light main">
+    <b-loading
+      :is-full-page="true"
+      :active.sync="oneRentaPending"
+      :can-cancel="false"
+    />
+    <div
+      v-if="!oneRentaPending"
+      class="columns is-gapless"
+    >
       <div class="bg-white column is-7">
-        <form class="p-3 p-md-5">
+        <form>
           <div class="columns">
             <div class="bg-white column">
               <b-steps
@@ -13,14 +21,14 @@
                 :has-navigation="true"
               >
                 <b-step-item
-                  label=""
-                  :clickable="true"
+                  label="Datos"
+                  :clickable="false"
                 >
-                  <h3 class="title mb-5 is-4">
-                    Finaliza un contrato de renta
+                  <h3 class="title is-3">
+                    {{ title }}
                   </h3>
-                  <h4 class="subtitle is-5">
-                    Texto descriptivo
+                  <h4 class="subtitle mb-4 is-4">
+                    Completa los datos de finalización del contrato y uso de depósito de garantía.
                   </h4>
 
                   <b-field
@@ -75,6 +83,89 @@
                       :disabled="submitted"
                     />
                   </b-field>
+                </b-step-item>
+
+                <b-step-item
+                  label="Registro de Estado del Inmueble"
+                  :clickable="false"
+                >
+                  <h3 class="title is-3">
+                    Registro de Estado del Inmueble
+                  </h3>
+                  <h4 class="subtitle mb-4 is-4">
+                    Registrá el estado de las instalaciones del inmueble en este momento.
+                  </h4>
+
+                  <div
+                    v-for="(categoria, index) in groupBy(allEstadosInmueble, 'enum_categoria')"
+                    :key="index"
+                    class="table-container"
+                  >
+                    <h5 class="title is-5">
+                      {{ categoria[0]['enum_categoria'] }}
+                    </h5>
+                    <table class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth">
+                      <thead>
+                        <tr>
+                          <th>Nombre</th>
+                          <th>Cantidad</th>
+                          <th>Reemplazar / Reparar</th>
+                          <th>Foto</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr
+                          v-for="item in categoria"
+                          :key="'estado-inmueble-' + item.id"
+                        >
+                          <td>{{ item.nombre }}</td>
+                          <td>
+                            <b-input
+<<<<<<< HEAD
+                              v-model="form.estados_inmueble[getEstadosInmuebleIndex(item)].cantidad"
+                              min="0"
+=======
+                              v-if="estadosInmueble[getEstadosInmuebleIndex(item)]"
+                              v-model="estadosInmueble[getEstadosInmuebleIndex(item)].cantidad"
+>>>>>>> b7fd028c9e3f405cba8f189ac111a587ca1efcc8
+                              type="number"
+                            />
+                          </td>
+                          <td>
+                            <b-checkbox
+                              v-if="estadosInmueble[getEstadosInmuebleIndex(item)]"
+                              v-model="estadosInmueble[getEstadosInmuebleIndex(item)].reparar"
+                              :true-value="1"
+                            /> {{ estadosInmueble[getEstadosInmuebleIndex(item)].reparar ? 'Sí' : 'No' }}
+                          </td>
+                          <td>
+                            <b-field grouped>
+                              <b-upload
+                                v-if="estadosInmueble[getEstadosInmuebleIndex(item)]"
+                                :id="'estado-inmueble-img-' + item.id"
+                                v-model="estadosInmueble[getEstadosInmuebleIndex(item)].foto"
+                                @input="handleFileInputChange($event, item.id)"
+                              >
+                                <a class="button is-light">
+                                  {{ estadosInmueble[getEstadosInmuebleIndex(item)].foto ? 'Cambiar' : 'Agregar' }}
+                                </a>
+                              </b-upload>
+                              <b-button
+                                v-if="estadosInmueble[getEstadosInmuebleIndex(item)]"
+                                :disabled="!estadosInmueble[getEstadosInmuebleIndex(item)].foto"
+                                type="is-light"
+                                @click="handleFotoModal(estadosInmueble[getEstadosInmuebleIndex(item)])"
+                              >
+                                Previsualizar
+                              </b-button>
+                            </b-field>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div class="is-divider" />
 
                   <b-field
                     label="Observaciones"
@@ -91,93 +182,15 @@
                 </b-step-item>
 
                 <b-step-item
-                  label=""
-                  :clickable="true"
+                  label="Finalización"
+                  :clickable="false"
                 >
-                  <h6 class="title is-6">
-                    PASO 2
-                  </h6>
-                  <h4 class="subtitle is-4">
-                    Registro de estado del inmueble
-                  </h4>
-
-                  <div
-                    v-for="categoria in groupBy(allEstadosInmueble, 'enum_categoria')"
-                    class="table-container"
-                  >
-                    <h5 class="title is-5">
-                      {{ categoria[0]['enum_categoria'] }}
-                    </h5>
-                    <table class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth">
-                      <thead>
-                        <tr>
-                          <th>Nombre</th>
-                          <th>Cantidad</th>
-                          <th>Reemplazar / Reparar</th>
-                          <th>Foto</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr v-for="(item, index) in categoria">
-                          <td>{{ item.nombre }}</td>
-                          <td>
-                            <b-input
-                              v-model="form.estados_inmueble[getEstadosInmuebleIndex(item)].cantidad"
-                              min="0"
-                              type="number"
-                            />
-                          </td>
-                          <td>
-                            <b-checkbox
-                              v-model="form.estados_inmueble[getEstadosInmuebleIndex(item)].reparar"
-                              :true-value="1"
-                              :native-value="1"
-                              :value="1"
-                            /> {{ form.estados_inmueble[getEstadosInmuebleIndex(item)].reparar ? 'Sí' : 'No' }}
-                          </td>
-                          <td>
-                            <b-field grouped>
-                              <b-upload
-                                :id="'estado-inmueble-img-' + item.id"
-                                v-model="form.estados_inmueble[getEstadosInmuebleIndex(item)].foto"
-                                @input="handleFileInputChange($event, item.id)"
-                              >
-                                <a class="button is-light">
-                                  {{ form.estados_inmueble[getEstadosInmuebleIndex(item)].foto ? 'Cambiar' : 'Agregar' }}
-                                </a>
-                              </b-upload>
-
-                              <b-button
-                                :disabled="!form.estados_inmueble[getEstadosInmuebleIndex(item)].foto !== ''"
-                                type="is-light"
-                                @click="isImageModalActive = 1"
-                              >
-                                Previsualizar
-                              </b-button>
-
-                              <b-modal
-                                :disabled="!form.estados_inmueble[getEstadosInmuebleIndex(item)].foto !== ''"
-                                :active.sync="isImageModalActive"
-                              >
-                                <p class="image is-4by3">
-                                  <img :src="'/storage/' + form.estados_inmueble[getEstadosInmuebleIndex(item)].foto">
-                                </p>
-                              </b-modal>
-                            </b-field>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </b-step-item>
-
-                <b-step-item>
-                  <h3 class="title mb-5 is-3">
+                  <h3 class="title is-3">
                     {{ user.id_persona.nombre }}, estás a punto de finalizar el contrato.
                   </h3>
-                  <h5 class="subtitle mb-5 is-4">
+                  <h4 class="subtitle mb-4 is-4">
                     Antes de finalizar el contrato podés hacer una revisión o editarlo posteriormente.
-                  </h5>
+                  </h4>
                   <b-button
                     :disabled="submitted"
                     size="is-large"
@@ -185,7 +198,7 @@
                     native-type="button"
                     @click="activeStep = 0"
                   >
-                    Revisar
+                    Revisar desde el comienzo
                   </b-button>
 
                   <div
@@ -211,6 +224,7 @@
                   <div class="level">
                     <div class="level-left">
                       <b-button
+                        v-if="activeStep > 0"
                         :disabled="previous.disabled||submitted"
                         icon-pack="fas"
                         icon-left="chevron-left"
@@ -218,6 +232,15 @@
                         @click.prevent="handlePreviousStep(previous)"
                       >
                         Anterior
+                      </b-button>
+                      <b-button
+                        v-else
+                        icon-pack="fas"
+                        icon-left="chevron-left"
+                        type="is-second"
+                        @click.prevent="$router.push({ name: 'Mis Rentas' })"
+                      >
+                        Volver a "Mis Contratos"
                       </b-button>
                     </div>
                     <div class="level-right">
@@ -239,12 +262,13 @@
         </form>
       </div>
     </div>
-  </section>
+  </main>
 </template>
 
 <script>
 import { authComputed } from "@/store/helpers"
 import { alertErrorMessage, alertSuccessMessage } from "@/utilities/helpers"
+import { dz } from "@/utilities/mixins/dz"
 import { estadosInmuebleComputed, estadosInmuebleMethods, rentasComputed, rentasMethods } from "@mvp/store/helpers"
 import { groupBy } from "lodash"
 import { mapEstadosInmuebleList } from "@mvp/store/modules/estadosInmueble/actions"
@@ -273,20 +297,24 @@ var fields = {
     estados_inmueble: [],
     fecha_finalizacion_contrato: new Date(),
     monto_descontado_garantia_finalizacion_contrato: 0,
+    motivo_descuento_garantia: "",
     observacion: "",
 }
 
 export default {
+    mixins: [dz],
+
     data() {
         return {
             activeStep: 0,
             boletas: [],
+            estadosInmueble: [],
             fecha_finalizacion_contrato: new Date(),
             form: new Form(fields),
-            isImageModalActive: false,
             oFiles: [],
             prepared: false,
             submitted: false,
+            title: "Finalizá un contrato de renta"
         }
     },
 
@@ -315,7 +343,7 @@ export default {
         },
 
         getEstadosInmuebleIndex(item) {
-            return this.form.estados_inmueble.findIndex(i => i.id === item.id)
+            return this.estadosInmueble.findIndex(estadoInmueble => estadoInmueble.id == item.id)
         },
 
         groupBy,
@@ -323,15 +351,36 @@ export default {
         handleFileInputChange(evt, id) {
             this.oFiles[id] = new FileReader()
             this.oFiles[id].readAsDataURL(document.getElementById("estado-inmueble-img-" + id).files[0])
-            this.oFiles[id].onload = (e) => this.readSuccess(e, id)
 
             this.activeOFile = id
+        },
+
+        handleFotoModal(estadoInmueble) {
+            var foto
+            if (this.oFiles[estadoInmueble.id]) {
+                foto = this.oFiles[estadoInmueble.id].result
+
+                this.$buefy.modal.open(
+                    `<p class="image is-4by3">
+                        <img src="` + foto + `" />
+                    </p>`
+                )
+
+            } else {
+                foto = estadoInmueble.foto
+
+                this.$buefy.modal.open(
+                    `<p class="image is-4by3">
+                        <img src="` + app.storagePath + "/" + foto + `" />
+                    </p>`
+                )
+            }
         },
 
         handleNextStep(next) {
             switch (this.activeStep) {
             case 0:
-                return this.validateAll(["fecha_finalizacion_contrato", "monto_descontado_garantia_finalizacion_contrato", "motivo_descuento_garantia", "observacion"], next)
+                return this.validateAll(["fecha_finalizacion_contrato", "monto_descontado_garantia_finalizacion_contrato", "motivo_descuento_garantia"], next)
             case 1:
                 return next.action()
             default:
@@ -349,8 +398,8 @@ export default {
             this.form.fecha_finalizacion_contrato = moment(this.fecha_finalizacion_contrato).format("YYYY-MM-DD").toString()
 
             return this.form.put(app.apiUrl + "/rentas/" + this.$route.params.id + "/finalizarContrato")
-                .then(response => {
-                    alertSuccessMessage("Finalizá un contrato de renta", "El contrato fue finalizado.")
+                .then(()=> {
+                    alertSuccessMessage(this.title, "El contrato fue finalizado.")
                     this.$router.push({ name: "Home" })
                     return this.submitted = false
                 })
@@ -369,18 +418,10 @@ export default {
         mapFormData(data) {
             return {
                 documentos: data.documentos,
-                estados_inmueble: this.allEstadosInmueble.map(estadoInmueble => {
-                    var attached = data.estados_inmueble.find(item => item.id === estadoInmueble.id)
-
-                    if (attached) {
-                        return { id: attached.id, cantidad: attached.pivot.cantidad, reparar: attached.pivot.reparar, foto: attached.pivot.foto }
-                    } else {
-                        return { id: estadoInmueble.id, cantidad: 0, reparar: 0, foto: "" }
-                    }
-                }),
+                estados_inmueble: [],
                 fecha_finalizacion_contrato: new Date(),
                 monto_descontado_garantia_finalizacion_contrato: 0,
-                motivo_descuento_garanta: data.motivo_descuento_garantia,
+                motivo_descuento_garantia: data.motivo_descuento_garantia,
                 observacion: data.observacion,
             }
         },
@@ -390,22 +431,31 @@ export default {
         },
 
         prepare() {
-            var renta = this.fetchOneRenta(this.$route.params.id)
             var estadosInmueble = this.fetchAllEstadosInmueble()
+            var renta = this.fetchOneRenta(this.$route.params.id)
 
-            return Promise.all([renta, estadosInmueble])
+            return Promise.all([estadosInmueble, renta])
                 .then(values => {
                     if (values[0] && values[1]) {
-                        //this.estadosInmueble = values[1].forEach(estadoInmueble => {
-                        //if (values[0].id == estadoInmueble.pivot.id) {
-                        ////this.estadosInmu
-                        //}
-                        //})
+                        this.estadosInmueble = mapEstadosInmuebleList(values[0], values[1].estados_inmueble)
 
-                        this.form = new Form(this.mapFormData(values[0]))
+                        this.form = new Form(this.mapFormData(values[1]))
+
+                        window.$(()=> {
+                            this.dzDocumentsMounted(values[1].documentos)
+                        })
+
                     }
 
                     return values
+                })
+                .catch(error => {
+                    var message = error.data.message||error.message||message
+                    if (error.status !== 422) {
+                        alertErrorMessage(this.title, message)
+                    }
+
+                    return error
                 })
         },
 

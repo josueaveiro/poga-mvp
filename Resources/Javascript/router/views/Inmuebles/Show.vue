@@ -147,7 +147,7 @@
                   type="text"
                   placeholder="Edificio para"
                   :value="form.formatos.map(item => { return item.formato }).join(',')"
-               />
+                />
               </b-field>
 
               <b-field
@@ -162,9 +162,13 @@
               <div class="is-divider" />
 
               <b-field label="Reglamento de propiedad">
-                <div v-if="oneInmueble.id_inmueble.documentos.length > 0" class="content">
+                <div
+                  v-if="oneInmueble.id_inmueble.documentos"
+                  class="content"
+                >
                   <article
                     v-for="documento in oneInmueble.id_inmueble.documentos"
+                    :key="documento.id"
                     class="media"
                   >
                     <figure class="media-left">
@@ -190,7 +194,7 @@
                 <div
                   v-else
                   class="content has-text-grey"
-                 >
+                >
                   <p>No hay documentos para descargar.</p>
                 </div>
               </b-field>
@@ -204,21 +208,23 @@
                 Amenities del Edificio
               </h3>
 
-              <b-field
+              <div
                 v-for="item in caracteristicasAmenities"
                 :key="item.id"
-                class="field"
               >
-                <b-switch
-                  v-if="form.id_inmueble.caracteristicas[item.id_caracteristica.id]"
-                  v-model="form.id_inmueble.caracteristicas[item.id_caracteristica.id]"
-                  :name="'id_inmueble.caracteristicas[' + item.id_caracteristica.id + ']'"
-                  :value="true"
-                  :disabled="true"
+                <div
+                  v-if="form.id_inmueble.caracteristicas[getCaracteristicasIndex(item.id_caracteristica.id)]"
+                  class="field"
                 >
-                  {{ item.id_caracteristica.nombre }}
-                </b-switch>
-              </b-field>
+                  <b-switch
+                    :name="'id_inmueble.caracteristicas[' + item.id_caracteristica.id + ']'"
+                    :value="true"
+                    :disabled="true"
+                  >
+                    {{ item.id_caracteristica.nombre }}
+                  </b-switch>
+                </div>
+              </div>
             </b-step-item>
 
             <b-step-item
@@ -241,12 +247,11 @@
                   >
                     <div
                       v-for="item in caracteristicasComodidades.filter(c => c.id_grupo_caracteristica == 1)"
+                      v-if="form.id_inmueble.caracteristicas[getCaracteristicasIndex(item.id_caracteristica.id)]"
                       :key="item.id"
                       class="field"
                     >
                       <b-switch
-                        v-if="form.id_inmueble.caracteristicas[item.id_caracteristica.id]"
-                        v-model="form.id_inmueble.caracteristicas[item.id_caracteristica.id]"
                         :value="true"
                         :name="'id_inmueble.caracteristicas[' + item.id_caracteristica.id + ']'"
                         :disabled="true"
@@ -261,6 +266,7 @@
                   <h6 class="title is-6">
                     Amoblamiento
                   </h6>
+
                   <b-field
                     grouped
                     group-multiline
@@ -268,12 +274,11 @@
                   >
                     <div
                       v-for="item in caracteristicasComodidades.filter(c => c.id_grupo_caracteristica == 2)"
+                      v-if="form.id_inmueble.caracteristicas[getCaracteristicasIndex(item.id_caracteristica.id)]"
                       :key="item.id"
                       class="field"
                     >
                       <b-switch
-                        v-if="form.id_inmueble.caracteristicas[item.id_caracteristica.id]"
-                        v-model="form.id_inmueble.caracteristicas[item.id_caracteristica.id]"
                         :name="'id_inmueble.caracteristicas[' + item.id_caracteristica.id + ']'"
                         :value="true"
                         :disabled="true"
@@ -294,29 +299,17 @@
                 >
                   <div
                     v-for="item in caracteristicasComodidades.filter(c => c.id_grupo_caracteristica == null)"
+                    v-if="form.id_inmueble.caracteristicas[getCaracteristicasIndex(item.id_caracteristica.id)]"
                     :key="item.id"
-                    class="field"
+                    class="b-field"
                   >
-                    <div v-if="isEdificio">
-                      <b-switch
-                        v-if="form.id_inmueble.caracteristicas[item.id_caracteristica.id]"
-                        v-model="form.id_inmueble.caracteristicas[item.id_caracteristica.id]"
-                        :name="'id_inmueble.caracteristicas[' + item.id_caracteristica.id + ']'"
-                        :disabled="true"
-                      >
-                        {{ item.id_caracteristica.nombre }}
-                      </b-switch>
-                    </div>
-                    <div v-else>
-                      <b-switch
-                        v-if="form.id_inmueble.caracteristicas[item.id_caracteristica.id]"
-                        v-model="form.id_inmueble.caracteristicas[item.id_caracteristica.id]"
-                        :name="'id_inmueble.caracteristicas[' + item.id_caracteristica.id + ']'"
-                        :disabled="true"
-                      >
-                        {{ item.id_caracteristica.nombre }}
-                      </b-switch>
-                    </div>
+                    <b-switch
+                      :name="'id_inmueble.caracteristicas[' + item.id_caracteristica.id + ']'"
+                      :value="true"
+                      :disabled="true"
+                    >
+                      {{ item.id_caracteristica.nombre }}
+                    </b-switch>
                   </div>
                 </b-field>
               </div>
@@ -399,7 +392,7 @@
 </template>
 
 <script>
-import { alertErrorMessage, alertSuccessMessage, deepClone, getSavedState, deleteSavedState, saveState } from "@/utilities/helpers"
+import { alertErrorMessage, deepClone } from "@/utilities/helpers"
 import { authComputed } from "@/store/helpers"
 import { caracteristicasTipoInmuebleComputed, caracteristicasTipoInmuebleMethods, formatosComputed, formatosMethods, inmueblesComputed, inmueblesMethods } from "@mvp/store/helpers"
 import { gmaps } from "@/utilities/mixins/gmaps"
@@ -414,8 +407,6 @@ import Form from "@/utilities/Form"
 
 var fields = deepClone(store.state.inmuebles.initialState.one)
 fields.unidades.push(deepClone(store.state.unidades.initialState.one))
-
-var token = getSavedState("auth.token")
 
 export default {
     mixins: [gmaps],
@@ -448,13 +439,7 @@ export default {
         },
 
         caracteristicasComodidades() {
-            var caracteristicas = this.allCaracteristicasTipoInmueble.filter(c => c.id_tipo_inmueble == this.form.id_inmueble.id_tipo_inmueble && c.id_tipo_caracteristica == 2)
-
-            return caracteristicas
-        },
-
-        caracteristicasPersonal() {
-            var caracteristicas = this.allCaracteristicasTipoInmueble.filter(c => c.id_tipo_inmueble == 1 && c.id_tipo_caracteristica == 3)
+            var caracteristicas = this.allCaracteristicasTipoInmueble.filter(c => c.id_tipo_caracteristica == 2 && c.id_tipo_inmueble == this.oneInmueble.id_inmueble.id_tipo_inmueble.id)
 
             return caracteristicas
         },
@@ -507,6 +492,10 @@ export default {
         ...inmueblesMethods,
         ...photosMethods,
 
+        getCaracteristicasIndex(id) {
+            return this.oneInmueble.id_inmueble.caracteristicas.findIndex(item => item.id === id)
+        },
+
         handleNextStep(next) {
             return next.action()
         },
@@ -548,7 +537,7 @@ export default {
                     numeracion: data.id_direccion.numeracion
                 },
                 id_inmueble: {
-                    caracteristicas: mapCaracteristicasTipoInmuebleList(this.allCaracteristicasTipoInmueble.filter(item => item.id_tipo_inmueble == data.id_inmueble.id_tipo_inmueble.id), data.id_inmueble.caracteristicas),
+                    caracteristicas: data.id_inmueble.caracteristicas,
                     descripcion: data.id_inmueble.descripcion,
                     id_tipo_inmueble: data.id_inmueble.id_tipo_inmueble.id.toString(),
                     solicitud_directa_inquilinos: data.id_inmueble.solicitud_directa_inquilinos,
@@ -566,22 +555,34 @@ export default {
             this.url = this.action
 
             var inmueble = this.fetchOneInmueble(this.$route.params.id)
-            var caracteristicas = this.fetchAllCaracteristicasTipoInmueble()
             var formatos = this.fetchAllFormatos()
 
-            return Promise.all([inmueble, caracteristicas, formatos])
+            return Promise.all([inmueble, formatos])
                 .then(values => {
-                    if (values[0] && values[1]) {
-                        this.form = new Form(this.mapFormData(values[0]))
+                    if (values[0]) {
+                        inmueble = values[0]
+                    }
+
+                    return this.fetchAllCaracteristicasTipoInmueble()
+                })
+                .then(caracteristicasTipoInmueble => {
+                    if (caracteristicasTipoInmueble) {
+                        this.form = new Form(this.mapFormData(inmueble))
 
                         window.$(()=> {
-                            this.initMap("map", { center: { lat: values[0].id_direccion.latitud, lng: values[0].id_direccion.longitud }, zoom: 14 })
-
-                            return
+                            this.initMap("map", { center: { lat: inmueble.id_direccion.latitud, lng: inmueble.id_direccion.longitud }, zoom: 14 })
                         })
                     }
 
-                    return values
+                    return caracteristicasTipoInmueble
+                })
+                .catch(error => {
+                    var message = error.data.message||error.message||error
+                    if (error.status !== 422) {
+                        alertErrorMessage("Perfil Público", message)
+                    }
+
+                    return  error
                 })
         }
     }
