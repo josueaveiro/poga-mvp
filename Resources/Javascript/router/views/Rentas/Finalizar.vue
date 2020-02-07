@@ -123,6 +123,7 @@
                           <td>
                             <b-input
                               v-model="form.estados_inmueble[getEstadosInmuebleIndex(item)].cantidad"
+                              min="0"
                               type="number"
                             />
                           </td>
