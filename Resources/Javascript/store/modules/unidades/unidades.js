@@ -10,9 +10,14 @@ export function initialState()
         one: {
             area: 0,
             area_estacionamiento: 0,
+            caracteristicas: [],
             id_administrador_referente: "",
             id_formato_inmueble: "",
-            id_inmueble_padre: "",
+            id_inmueble_padre: {
+                id_inmueble: {
+                    caracteristicas: []
+                }
+            },
             id_medida: "",
             id_inmueble: {
                 caracteristicas: [],

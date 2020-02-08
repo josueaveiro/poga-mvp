@@ -3,10 +3,6 @@
   height: 20rem;
   width: 100%;
 }
-
-.step-content {
-  min-height: 75vh;
-}
 </style>
 
 <template>
@@ -103,8 +99,12 @@
                 </b-radio-button>
               </b-field>
 
-              <p v-if="form.modalidad_propiedad === 'EN_CONDOMINIO'">El edificio en el cual se encuentra el departamento está compuesto por más de un propietario.</p>
-              <p v-else>Todos los departamentos del edificio corresponden a un único propietario.</p>
+              <p v-if="form.modalidad_propiedad === 'EN_CONDOMINIO'">
+                El edificio en el cual se encuentra el departamento está compuesto por más de un propietario.
+              </p>
+              <p v-else>
+                Todos los departamentos del edificio corresponden a un único propietario.
+              </p>
             </b-step-item>
 
             <b-step-item
@@ -339,55 +339,6 @@
               </div>
 
               <div class="is-divider" />
-
-              <!--
-              <h6 class="title is-6">
-                Personal
-              </h6>
-
-              <b-field
-                grouped
-                group-multiline
-              >
-                <div
-                  v-for="item in caracteristicasPersonal"
-                  :key="item.id"
-                  class="field"
-                >
-                  <b-switch
-                    v-model="caracteristicas[item.id]"
-                    :disabled="submitted"
-                  >
-                    {{ item.id_caracteristica.nombre }}
-                  </b-switch>
-                </div>
-              </b-field>
-
-              <div class="is-divider" />
-
-             
-              <h6 class="title is-6"> 
-                Reglamento de propiedad
-              </h6>
-
-              <b-field
-                grouped
-                group-multiline
-              >
-                <div
-                  v-for="item in caracteristicasReglamentoPropiedad"
-                  :key="item.id"
-                  class="field"
-                >
-                  <b-switch
-                    v-model="caracteristicas[item.id]"
-                    :disabled="submitted"
-                  >
-                    {{ item.id_caracteristica.nombre }}
-                  </b-switch>
-                </div>
-              </b-field>
-              -->
 
               <b-field label="Reglamento de propiedad">
                 <vue-dropzone
@@ -671,7 +622,9 @@
               <h3 class="title mb-5 is-3">
                 ¡Lo estás haciendo genial, {{ user.id_persona.nombre }}!
               </h3>
-              <h4 class="subtitle is-4">Antes de finalizar el registro de tu inmueble podés hacer una revisión o editarlo posteriormente.</h4>
+              <h4 class="subtitle is-4">
+                Antes de finalizar el registro de tu inmueble podés hacer una revisión o editarlo posteriormente.
+              </h4>
               <b-button
                 :disabled="submitted"
                 size="is-large"
@@ -1129,19 +1082,19 @@ export default {
         prepare() {
             window.$(()=> {
                 this.geolocate()
-                .then(coordinates => {
-                    if (coordinates) {
-                        this.form.id_direccion.latitud = coordinates.lat
-                        this.form.id_direccion.longitud = coordinates.lng
-                    }
+                    .then(coordinates => {
+                        if (coordinates) {
+                            this.form.id_direccion.latitud = coordinates.lat
+                            this.form.id_direccion.longitud = coordinates.lng
+                        }
 
-                    this.initMap("map", { center: { lat: this.form.id_direccion.latitud, lng: this.form.id_direccion.longitud }, zoom: 14 })
+                        this.initMap("map", { center: { lat: this.form.id_direccion.latitud, lng: this.form.id_direccion.longitud }, zoom: 14 })
 
-                    return coordinates
-                })
-                .catch(error => {
-                    alertErrorMessage(this.title, "No se ha podido geolocalizar la ubicación.")
-                })
+                        return coordinates
+                    })
+                    .catch(error => {
+                        alertErrorMessage(this.title, "No se ha podido geolocalizar la ubicación.")
+                    })
             })
 
             this.form.id_propietario_referente = this.$store.state.auth.user.id_persona.id
