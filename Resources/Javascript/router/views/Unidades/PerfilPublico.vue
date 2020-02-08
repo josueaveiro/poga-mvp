@@ -71,47 +71,49 @@
 
           <hr>
 
-          <div>
-            <h4 class="title is-4">
-              Amenities del Edificio
-            </h4>
-            <b-taglist
-              v-if="oneUnidad.id_inmueble_padre.id_inmueble.caracteristicas.filter(c => c.id_grupo_caracteristica == null).length > 0"
-              class="mb-4"
+          <h4 class="title is-4">
+            Amenities
+          </h4>
+          <b-taglist
+            v-if="oneUnidad.id_inmueble_padre.id_inmueble.caracteristicas.filter(c => c.id_tipo_caracteristica == 2 && c.id_grupo_caracteristica == null)"
+            class="mb-4"
+          >
+            <div
+              v-for="item in oneUnidad.id_inmueble_padre.id_inmueble.caracteristicas.filter(c => c.id_tipo_caracteristica == 2 && c.id_grupo_caracteristica == null)"
+              :key="item.id"
             >
               <b-tag
-                v-for="item in caracteristicasComodidades.filter(c => c.id_grupo_caracteristica == null)"
-                :key="item.id"
-                class="is-primary"
+                class="is-primary mr-2"
               >
-                {{ item.id_caracteristica.nombre }}
+                {{ item.nombre }}
               </b-tag>
-            </b-taglist>
-
-            <div
-              v-else
-              class="has-text-grey"
-            >
-              <p>No hay caracteristicas para mostrar.</p>
             </div>
+          </b-taglist>
+
+          <div
+            v-else
+            class="has-text-grey"
+          >
+            <p>No hay amenities para mostrar.</p>
           </div>
 
           <hr>
           <h4 class="title is-4">
             Comodidades
           </h4>
-          <div v-if="!isEdificio">
+          <div>
             <h6 class="title is-6">
               Electrodomésticos
             </h6>
             <b-taglist
-              v-if="caracteristicasComodidades.filter(c => c.id_grupo_caracteristica == 1).length > 0"
+              v-if="filteredCaracteristicas.filter(c => c.id_grupo_caracteristica == 1)"
               class="mb-4"
             >
               <b-tag
-                v-for="item in caracteristicasComodidades.filter(c => c.id_grupo_caracteristica == 1)"
+                v-for="item in filteredCaracteristicas.filter(c => c.id_grupo_caracteristica == 1)"
                 :key="item.id"
-                class="is-primary"
+                v-if="oneUnidad.id_inmueble.caracteristicas[getCaracteristicasIndex(item.id_caracteristica.id)]"
+                class="is-primary mr-2"
               >
                 {{ item.id_caracteristica.nombre }}
               </b-tag>
@@ -125,16 +127,17 @@
             </div>
           </div>
 
-          <div v-if="!isEdificio">
+          <div>
             <h6 class="title is-6">
               Amoblamiento
             </h6>
             <b-taglist
-              v-if="caracteristicasComodidades.filter(c => c.id_grupo_caracteristica == 2).length > 0"
+              v-if="filteredCaracteristicas.filter(c => c.id_grupo_caracteristica == 2)"
               class="mb-4"
             >
               <b-tag
-                v-for="item in caracteristicasComodidades.filter(c => c.id_grupo_caracteristica == 2)"
+                v-for="item in filteredCaracteristicas.filter(c => c.id_grupo_caracteristica == 2)"
+                v-if="oneUnidad.id_inmueble.caracteristicas[getCaracteristicasIndex(item.id_caracteristica.id)]"
                 :key="item.id"
                 class="is-primary"
               >
@@ -154,11 +157,12 @@
             Otros
           </h6>
           <b-taglist
-            v-if="caracteristicasComodidades.filter(c => c.id_grupo_caracteristica == null).length > 0"
+            v-if="filteredCaracteristicas.filter(c => c.id_grupo_caracteristica == null)"
             class="mb-4"
           >
             <b-tag
-              v-for="item in caracteristicasComodidades.filter(c => c.id_grupo_caracteristica == null)"
+              v-if="oneUnidad.id_inmueble.caracteristicas[getCaracteristicasIndex(item.id_caracteristica.id)]"
+              v-for="item in filteredCaracteristicas.filter(c => c.id_grupo_caracteristica == null)"
               :key="item.id"
               class="is-primary"
             >
@@ -189,15 +193,9 @@
 <script>
 import { authComputed } from "@/store/helpers"
 import { caracteristicasTipoInmuebleComputed, caracteristicasTipoInmuebleMethods, formatosComputed, formatosMethods, unidadesComputed, unidadesMethods } from "@mvp/store/helpers"
-import { deepClone } from "@/utilities/helpers"
 import { gmaps } from "@/utilities/mixins/gmaps"
-import { mapCaracteristicasTipoInmuebleList } from "@mvp/store/modules/caracteristicasTipoInmueble/actions"
 
-import app from "@/app"
 import moment from "moment"
-import store from "@/store"
-
-var fields = deepClone(store.state.unidades.initialState.one)
 
 export default {
     mixins: [gmaps],
@@ -205,7 +203,7 @@ export default {
     data() {
         return {
             prepared: false,
-            url: app.apiUrl + "/inmuebles"
+            title: "Perfil Público",
         }
     },
 
@@ -215,45 +213,22 @@ export default {
         ...formatosComputed,
         ...unidadesComputed,
 
-        addressForm() {
-            return this.form.id_direccion
-        },
-
-        caracteristicasComodidades() {
-            var caracteristicas = this.allCaracteristicasTipoInmueble.filter(c => c.id_tipo_caracteristica == 2)
-
-            return caracteristicas
+        filteredCaracteristicas() {
+            return this.allCaracteristicasTipoInmueble.filter(c => c.id_tipo_caracteristica == 2)
         },
 
         formatosInmueble() {
             return this.allFormatos.map(item => { return { id: item.id, formato: item.formato }})
                 .filter(i => this.form.formatos.includes(i.id))
-        },
-
-        isEdificio() {
-            return this.oneUnidad.id_inmueble.id_tipo_inmueble.id == 1
-        },
-
-        pickedAddressComponents() {
-            return {
-                street_number: ["numeracion", "short_name"],
-                route: ["calle_principal", "long_name"],
-                administrative_area_level_2: ["ciudad", "long_name"],
-                administrative_area_level_1: ["departamento", "long_name"],
-            }
         }
     },
 
     watch: {
         "$route" (value) {
-            if (value.name === "Editar Inmueble") {
+            if (value.name === "Perfil Publico Unidad") {
                 this.prepare()
             }
         }
-    },
-
-    beforeDestroy() {
-        this.isDestroying = true
     },
 
     created() {
@@ -265,8 +240,8 @@ export default {
         ...formatosMethods,
         ...unidadesMethods,
 
-        getCaracteristicasIndex(index) {
-            return this.oneUnidad.id_inmueble.caracteristicas.findIndex(item => item.id === index)
+        getCaracteristicasIndex(id) {
+            return this.oneUnidad.id_inmueble.caracteristicas.findIndex(item => item.id === id)
         },
 
         initMap(el, options) {
@@ -283,27 +258,31 @@ export default {
             return Promise.resolve(this.map)
         },
 
-        mapCaracteristicasTipoInmuebleList,
-
         moment,
 
         prepare() {
             var unidad = this.fetchOneUnidad(this.$route.params.id)
+            var formatos = this.fetchAllFormatos()
 
-            return Promise.all([unidad])
+            return Promise.all([unidad, formatos])
                 .then(values => {
                     if (values[0]) {
-                        this.fetchAllCaracteristicasTipoInmueble({ id_tipo_inmueble: values[0].id_inmueble.id_tipo_inmueble.id })
+                        unidad = values[0]
+
+                        window.$(()=> {
+                            this.initMap("map", { center: { lat: unidad.id_inmueble_padre.id_direccion.latitud, lng: unidad.id_inmueble_padre.id_direccion.longitud }, zoom: 14 })
+                        })
+
+                        return this.fetchAllCaracteristicasTipoInmueble({ id_tipo_inmueble: unidad.id_inmueble.id_tipo_inmueble.id })
                     }
 
-                    return unidad
+                    return values
                 })
-                .then(unidad => {
-                    window.$(()=> {
-                        this.initMap("map", { center: { lat: unidad.id_inmueble_padre.id_direccion.latitud, lng: unidad.id_inmueble_padre.id_direccion.longitud }, zoom: 14 })
+                .catch(error => {
+                    var message = error.data.message||error.message||error
+                    alertErrorMessage(this.title, message)
 
-                        return
-                    })
+                    return  error
                 })
         }
     }

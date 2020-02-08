@@ -61,11 +61,11 @@ export function mapCaracteristicasTipoInmuebleList(items, caracteristicas) {
     var obj = {}
 
     items.forEach(item => {
-        var key = item.id_caracteristica.id, value
+        var key = item.id, value
 
-        var caracteristica = caracteristicas.find(c => c.pivot.id_caracteristica_tipo_inmueble == item.id)
+        var caracteristica = caracteristicas.find(c => c.pivot.id_caracteristica_tipo_inmueble == key)
         if (caracteristica) {
-            if (typeof(caracteristica.pivot.cantidad) === "number") {
+            if (typeof caracteristica.pivot.cantidad === "number") {
                 value = caracteristica.pivot.cantidad
             } else {
                 value = true

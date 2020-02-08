@@ -42,36 +42,35 @@
                 grouped
                 group-multiline
                 <b-field
-                  label="Piso"
-                  :message="getErrorMessage(['piso', 'piso'])"
-                  :type="setFieldType(['piso', 'piso'])"
-                >
-                  <b-input
-                    v-model="form.piso"
-                    v-validate="'required|numeric'"
-                    data-vv-as="Piso"
-                    name="piso"
-                    :disabled="true"
-                    :max="form.cant_pisos"
-                    min="0"
-                    type="number"
-                  />
-                </b-field>
+                label="Piso"
+                :message="getErrorMessage(['piso', 'piso'])"
+                :type="setFieldType(['piso', 'piso'])"
+              >
+                <b-input
+                  v-model="form.piso"
+                  v-validate="'required|numeric'"
+                  data-vv-as="Piso"
+                  name="piso"
+                  :disabled="true"
+                  :max="form.cant_pisos"
+                  min="0"
+                  type="number"
+                />
+              </b-field>
 
-                <b-field
-                  label="Número"
-                  :message="getErrorMessage(['numero', 'numero'])"
-                  :type="setFieldType(['numero', 'numero'])"
-                >
-                  <b-input
-                    v-model="form.numero"
-                    v-validate="'required'"
-                    :disabled="true"
-                    name="numero"
-                    data-vv-as="Numero"
-                    type="text"
-                  />
-                </b-field>
+              <b-field
+                label="Número"
+                :message="getErrorMessage(['numero', 'numero'])"
+                :type="setFieldType(['numero', 'numero'])"
+              >
+                <b-input
+                  v-model="form.numero"
+                  v-validate="'required'"
+                  :disabled="true"
+                  name="numero"
+                  data-vv-as="Numero"
+                  type="text"
+                />
               </b-field>
 
               <b-field
@@ -121,8 +120,8 @@
               >
                 <b-field :label="item.id_caracteristica.nombre">
                   <b-input
-                    v-model="form.id_inmueble.caracteristicas[item.id_caracteristica.id]"
-                    :name="'id_inmueble.caracteristicas[' + item.id_caracteristica.id + ']'"
+                    v-model="caracteristicas[item.id]"
+                    :name="'id_inmueble.caracteristicas[' + item.id + ']'"
                     :disabled="true"
                     type="number"
                     icon-pack="fas"
@@ -154,10 +153,8 @@
                     class="field"
                   >
                     <b-switch
-                      v-if="caracteristicas[item.id_caracteristica.id]"
-                      v-model="caracteristicas[item.id_caracteristica.id]"
-                      :name="'id_inmueble.caracteristicas[' + item.id_caracteristica.id + ']'"
                       :value="true"
+                      :name="'id_inmueble.caracteristicas[' + item.id + ']'"
                       :disabled="true"
                     >
                       {{ item.id_caracteristica.nombre }}
@@ -179,9 +176,7 @@
                     class="field"
                   >
                     <b-switch
-                      v-if="caracteristicas[item.id_caracteristica.id]"
-                      v-model="caracteristicas[item.id_caracteristica.id]"
-                      :name="'id_inmueble.caracteristicas[' + item.id_caracteristica.id + ']'"
+                      :name="'id_inmueble.caracteristicas[' + item.id + ']'"
                       :value="true"
                       :disabled="true"
                     >
@@ -204,9 +199,7 @@
                     class="field"
                   >
                     <b-switch
-                      v-if="caracteristicas[item.id_caracteristica.id]"
-                      v-model="caracteristicas[item.id_caracteristica.id]"
-                      :name="'id_inmueble.caracteristicas[' + item.id_caracteristica.id + ']'"
+                      :name="'id_inmueble.caracteristicas[' + item.id + ']'"
                       :value="true"
                       :disabled="true"
                     >
@@ -331,41 +324,7 @@ export default {
             action: app.apiUrl + "/unidades",
             activeStep: 0,
             caracteristicas: [],
-            dzDocumentsOptions: {
-                addRemoveLinks: true,
-                autoProcessQueue: false,
-                dictDefaultMessage: "<i class='fa fa-cloud-upload'></i><br/>Hacé click o arrastrá una o más documentos hacía acá",
-                headers: {
-                    "X-CSRF-TOKEN": csrfToken,
-                    "Authorization": "Bearer " + token
-                },
-                maxFiles: 4,
-                maxFilesize: 20,
-                method: "put",
-                parallelUploads: 4,
-                paramName: "documentos",
-                uploadMultiple: true,
-                url: app.apiUrl + "/unidades"
-            },
-            dzUnfeaturedPhotosOptions: {
-                addRemoveLinks: true,
-                autoProcessQueue: false,
-                dictDefaultMessage: "<i class='fa fa-cloud-upload'></i><br/>Hacé click o arrastrá una o más fotos hacía acá",
-                headers: {
-                    "X-CSRF-TOKEN": csrfToken,
-                    "Authorization": "Bearer " + token
-                },
-                maxFiles: 8,
-                maxFilesize: 1,
-                method: "put",
-                parallelUploads: 8,
-                paramName: "unfeatured_photos",
-                uploadMultiple: true,
-                url: app.apiUrl + "/unidades"
-            },
             form: new Form(fields),
-            formatos: [],
-            isDestroying: false,
             method: "put",
             prepared: false,
             submitted: false,
@@ -385,7 +344,7 @@ export default {
 
         filteredFormatos() {
             return mapFormatosList(this.allFormatos)
-                .filter(item => this.formatos.map(i => { return i.pivot.id_formato }).includes(item.id))
+                .filter(item => this.form.id_inmueble_padre.id_inmueble.formatos.map(i => { return i.pivot.id_formato }).includes(item.id))
         }
     },
 
@@ -450,26 +409,7 @@ export default {
         },
 
         handleNextStep(next) {
-            switch (this.activeStep) {
-            case 0:
-                return next.action()
-            case 1:
-                return this.validateAll(["calle_principal"], next)
-            case 2:
-                return next.action()
-            case 3:
-                return this.validateAll(["nombre", "formatos", "cant_pisos"], next)
-            case 4:
-                return next.action()
-            case 5:
-                return this.validateAll(["piso", "numero", "area", "id_formato_inmueble"], next)
-            case 6:
-                return next.action()
-            case 7:
-                return next.action()
-            default:
-                return false
-            }
+            return next.action()
         },
 
         handlePreviousStep(previous) {
@@ -490,6 +430,11 @@ export default {
                     id_tipo_inmueble: data.id_inmueble.id_tipo_inmueble.id,
                     solicitud_directa_inquilinos: data.id_inmueble.solicitud_directa_inquilinos
                 },
+                id_inmueble_padre: {
+                    id_inmueble: {
+                        formatos: data.id_inmueble_padre.id_inmueble.formatos
+                    }
+                },
                 id_medida: data.id_medida.id,
                 numero: data.numero,
                 piso: data.piso
@@ -500,22 +445,22 @@ export default {
 
         prepare() {
             var unidad = this.fetchOneUnidad(this.$route.params.id)
-            var caracteristicasTipoInmueble = this.fetchAllCaracteristicasTipoInmueble()
             var formatos = this.fetchAllFormatos()
 
-            return Promise.all([unidad, caracteristicasTipoInmueble, formatos])
+            return Promise.all([unidad, formatos])
                 .then(values => {
-                    if (values[0] && values[1]) {
-                        this.caracteristicas = mapCaracteristicasTipoInmuebleList(values[1].filter(item => item.id_tipo_inmueble == values[0].id_inmueble.id_tipo_inmueble.id), values[0].id_inmueble.caracteristicas)
-                        this.formatos = values[0].id_inmueble_padre.id_inmueble.formatos
-                        this.form = new Form(this.mapFormData(values[0]))
-
-                        if (values[0].id_inmueble.unfeatured_photos) {
-                            this.dzUnfeaturedPhotosMounted(values[0].id_inmueble.unfeatured_photos)
-                        }
+                    if (values[0]) {
+                        unidad = values[0]
                     }
 
-                    return values
+                    return this.fetchAllCaracteristicasTipoInmueble()
+                })
+                .then(caracteristicasTipoInmueble => {
+                    if (caracteristicasTipoInmueble) {
+                        this.form = new Form(this.mapFormData(unidad))
+                    }
+
+                    return caracteristicasTipoInmueble
                 })
         },
 

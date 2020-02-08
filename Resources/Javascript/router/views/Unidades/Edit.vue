@@ -113,8 +113,8 @@
               >
                 <b-field :label="item.id_caracteristica.nombre">
                   <b-numberinput
-                    v-model="form.id_inmueble.caracteristicas[item.id_caracteristica.id]"
-                    :name="'id_inmueble.caracteristicas[' + item.id_caracteristica.id + ']'"
+                    v-model="caracteristicas[item.id]"
+                    :name="'id_inmueble.caracteristicas[' + item.id + ']'"
                     :disabled="submitted"
                     min="0"
                     icon-pack="fas"
@@ -146,8 +146,8 @@
                     class="field"
                   >
                     <b-switch
-                      v-model="caracteristicas[item.id_caracteristica.id]"
-                      :name="'id_inmueble.caracteristicas[' + item.id_caracteristica.id + ']'"
+                      v-model="caracteristicas[item.id]"
+                      :name="'id_inmueble.caracteristicas[' + item.id + ']'"
                       :value="true"
                       :disabled="submitted"
                     >
@@ -170,8 +170,8 @@
                     class="field"
                   >
                     <b-switch
-                      v-model="caracteristicas[item.id_caracteristica.id]"
-                      :name="'id_inmueble.caracteristicas[' + item.id_caracteristica.id + ']'"
+                      v-model="caracteristicas[item.id]"
+                      :name="'id_inmueble.caracteristicas[' + item.id + ']'"
                       :value="true"
                       :disabled="submitted"
                     >
@@ -194,8 +194,8 @@
                     class="field"
                   >
                     <b-switch
-                      v-model="caracteristicas[item.id_caracteristica.id]"
-                      :name="'id_inmueble.caracteristicas[' + item.id_caracteristica.id + ']'"
+                      v-model="caracteristicas[item.id]"
+                      :name="'id_inmueble.caracteristicas[' + item.id + ']'"
                       :value="true"
                       :disabled="submitted"
                     >
@@ -232,7 +232,9 @@
               <h3 class="title mb-5 is-3">
                 ¡Lo estás haciendo genial, {{ user.id_persona.nombre }}!
               </h3>
-              <h4 class="subtitle is-4">Antes de finalizar la actualización de tu departamento podés hacer una revisión o editarlo posteriormente.</h4>
+              <h4 class="subtitle is-4">
+                Antes de finalizar la actualización de tu departamento podés hacer una revisión o editarlo posteriormente.
+              </h4>
               <b-button
                 :disabled="submitted"
                 size="is-large"
@@ -297,22 +299,16 @@
 
 <script>
 import app from "@/app"
-import { alertErrorMessage, alertSuccessMessage, deepClone, getSavedState, deleteSavedState, saveState } from "@/utilities/helpers"
+import { alertErrorMessage, alertSuccessMessage, deepClone } from "@/utilities/helpers"
 import { authComputed } from "@/store/helpers"
 import { caracteristicasTipoInmuebleComputed, caracteristicasTipoInmuebleMethods, formatosComputed, formatosMethods, unidadesComputed, unidadesMethods } from "@mvp/store/helpers"
-import { dz } from "@/utilities/mixins/dz"
 import { documentsMethods, photosMethods } from "@/store/helpers"
 import { mapCaracteristicasTipoInmuebleList } from "@mvp/store/modules/caracteristicasTipoInmueble/actions"
 import { mapFormatosList } from "@mvp/store/modules/formatos/actions"
 
 import store from "@/store"
 
-import vue2Dropzone from "vue2-dropzone"
-import "vue2-dropzone/dist/vue2Dropzone.min.css"
-
 import Form from "@/utilities/Form"
-
-var csrfToken = document.head.querySelector("meta[name=\"csrf-token\"]").content
 
 var fields = deepClone(store.state.unidades.initialState.one)
 fields.id_inmueble_padre = {
@@ -321,55 +317,13 @@ fields.id_inmueble_padre = {
     }
 }
 
-var token = getSavedState("auth.token")
-
 export default {
-    components: {
-        VueDropzone: vue2Dropzone
-    },
-
-    mixins: [dz],
-
     data() {
         return {
             action: app.apiUrl + "/unidades",
             activeStep: 0,
             caracteristicas: [],
-            dzDocumentsOptions: {
-                addRemoveLinks: true,
-                autoProcessQueue: false,
-                dictDefaultMessage: "<i class='fa fa-cloud-upload'></i><br/>Hacé click o arrastrá una o más documentos hacía acá",
-                headers: {
-                    "X-CSRF-TOKEN": csrfToken,
-                    "Authorization": "Bearer " + token
-                },
-                maxFiles: 4,
-                maxFilesize: 20,
-                method: "put",
-                parallelUploads: 4,
-                paramName: "documentos",
-                uploadMultiple: true,
-                url: app.apiUrl + "/unidades"
-            },
-            dzUnfeaturedPhotosOptions: {
-                addRemoveLinks: true,
-                autoProcessQueue: false,
-                dictDefaultMessage: "<i class='fa fa-cloud-upload'></i><br/>Hacé click o arrastrá una o más fotos hacía acá",
-                headers: {
-                    "X-CSRF-TOKEN": csrfToken,
-                    "Authorization": "Bearer " + token
-                },
-                maxFiles: 8,
-                maxFilesize: 1,
-                method: "put",
-                parallelUploads: 8,
-                paramName: "unfeatured_photos",
-                uploadMultiple: true,
-                url: app.apiUrl + "/unidades"
-            },
             form: new Form(fields),
-            formatos: [],
-            isDestroying: false,
             method: "put",
             prepared: false,
             submitted: false,
@@ -389,7 +343,7 @@ export default {
 
         filteredFormatos() {
             return mapFormatosList(this.allFormatos)
-                .filter(item => this.formatos.map(i => { return i.pivot.id_formato }).includes(item.id))
+                .filter(item => this.form.id_inmueble_padre.id_inmueble.formatos.map(i => { return i.pivot.id_formato }).includes(item.id))
         }
     },
 
@@ -399,10 +353,6 @@ export default {
                 this.prepare()
             }
         }
-    },
-
-    beforeDestroy() {
-        this.isDestroying = true
     },
 
     created() {
@@ -415,14 +365,6 @@ export default {
         ...formatosMethods,
         ...photosMethods,
         ...unidadesMethods,
-
-        dzUnfeaturedPhotosSuccess() {
-            alertSuccessMessage("Actualiza un Inmueble", "Tu " + this.oneUnidad.id_inmueble.id_tipo_inmueble.tipo + " fue actualizado.")
-
-            this.$router.push({ name: "Mis Inmuebles" })
-
-            return this.submitted = false
-        },
 
         formatDireccion() {
             this.direccion = this.form.id_direccion.calle_principal + "," + this.form.id_direccion.numeracion + "," + this.form.id_direccion.calle_secundaria
@@ -437,16 +379,18 @@ export default {
         handleCaracteristicas() {
             var caracteristica, nonEmptyCaracteristicas = []
 
-            Object.entries(this.caracteristicas).forEach(item => {
-                caracteristica = this.allCaracteristicasTipoInmueble.find(c => c.id_caracteristica.id == item[0])
-                console.log(caracteristica)
+            var entries = Object.entries(this.caracteristicas).filter(entry => entry[1])
 
-                if (caracteristica.enum_tipo_campo === "number") {
-                    caracteristica.id_caracteristica.cantidad = item[1]
-                    nonEmptyCaracteristicas.push(caracteristica)
-                } else {
-                    caracteristica.id_caracteristica.cantidad = null
-                    nonEmptyCaracteristicas.push(caracteristica)
+            entries.forEach(entry => {
+                caracteristica = this.allCaracteristicasTipoInmueble.find(c => c.id == entry[0])
+                if (caracteristica) {
+                    if (caracteristica.enum_tipo_campo === "number") {
+                        caracteristica.id_caracteristica.cantidad = entry[1]
+                        nonEmptyCaracteristicas.push(caracteristica)
+                    } else {
+                        caracteristica.id_caracteristica.cantidad = null
+                        nonEmptyCaracteristicas.push(caracteristica)
+                    }
                 }
             })
 
@@ -462,7 +406,7 @@ export default {
             case 2:
                 return next.action()
             case 3:
-                return this.validateAll(["nombre", "formatos", "cant_pisos"], next)
+                return this.validateAll(["nombre", "id_formato_inmueble", "cant_pisos"], next)
             case 4:
                 return next.action()
             case 5:
@@ -487,13 +431,11 @@ export default {
 
             this.handleCaracteristicas()
 
-            var id 
             return this.form[this.method](this.action + "/" + this.$route.params.id)
                 .then(response => {
-                    id = response.data.id
-                    this.url = this.action + "/" + id
-
-                    return this.dzUnfeaturedPhotosProcessQueue()
+                    alertSuccessMessage("Actualiza un Inmueble", "Tu " + this.oneUnidad.id_inmueble.id_tipo_inmueble.tipo + " fue actualizado.")
+                    this.$router.push({ name: "Mis Inmuebles" })
+                    return this.submitted = false
                 })
                 .catch(error => {
                     var message = error.data.message||error.message||error
@@ -506,18 +448,24 @@ export default {
         },
 
         mapCaracteristicasTipoInmuebleList,
+        mapFormatosList,
 
         mapFormData(data) {
             var map = {
                 area: data.area,
                 area_estacionamiento: data.area_estacionamiento,
+                caracteristicas: [],
                 id_formato_inmueble: data.id_formato_inmueble.id_formato.id,
                 id_inmueble: {
-                    caracteristicas: mapCaracteristicasTipoInmuebleList(this.allCaracteristicasTipoInmueble.filter(item => item.id_tipo_inmueble == data.id_inmueble.id_tipo_inmueble.id), data.id_inmueble.caracteristicas),
                     descripcion: data.id_inmueble.descripcion,
                     unfeatured_photos: data.id_inmueble.unfeatured_photos,
                     id_tipo_inmueble: data.id_inmueble.id_tipo_inmueble.id,
                     solicitud_directa_inquilinos: data.id_inmueble.solicitud_directa_inquilinos
+                },
+                id_inmueble_padre: {
+                    id_inmueble: {
+                        formatos: data.id_inmueble_padre.id_inmueble.formatos
+                    }
                 },
                 id_medida: data.id_medida.id,
                 numero: data.numero,
@@ -529,22 +477,23 @@ export default {
 
         prepare() {
             var unidad = this.fetchOneUnidad(this.$route.params.id)
-            var caracteristicasTipoInmueble = this.fetchAllCaracteristicasTipoInmueble()
             var formatos = this.fetchAllFormatos()
 
-            return Promise.all([unidad, caracteristicasTipoInmueble, formatos])
+            return Promise.all([unidad, formatos])
                 .then(values => {
                     if (values[0] && values[1]) {
-                        this.caracteristicas = mapCaracteristicasTipoInmuebleList(values[1].filter(item => item.id_tipo_inmueble == values[0].id_inmueble.id_tipo_inmueble.id), values[0].id_inmueble.caracteristicas)
-                        this.formatos = values[0].id_inmueble_padre.id_inmueble.formatos
-                        this.form = new Form(this.mapFormData(values[0]))
-
-                        if (values[0].id_inmueble.unfeatured_photos) {
-                            this.dzUnfeaturedPhotosMounted(values[0].id_inmueble.unfeatured_photos)
-                        }
+                        unidad = values[0]
                     }
 
-                    return values
+                    return this.fetchAllCaracteristicasTipoInmueble({ id_tipo_inmueble: unidad.id_inmueble.id_tipo_inmueble.id })
+                })
+                .then(caracteristicasTipoInmueble => {
+                    if (caracteristicasTipoInmueble) {
+                        this.caracteristicas = mapCaracteristicasTipoInmuebleList(caracteristicasTipoInmueble, unidad.id_inmueble.caracteristicas)
+                        this.form = new Form(this.mapFormData(unidad))
+                    }
+
+                    return caracteristicasTipoInmueble
                 })
         },
 

@@ -230,13 +230,14 @@
             <b-step-item
               label=""
               :clickable="true"
+              :visible="!isEdificio"
             >
               <h3 class="title mb-5 is-3">
                 Comodidades ofrecidas
               </h3>
 
               <div class="content">
-                <div v-if="!isEdificio">
+                <div>
                   <h6 class="title is-6">
                     Electrodomésticos
                   </h6>
@@ -246,7 +247,7 @@
                     class="mb-4"
                   >
                     <div
-                      v-for="item in caracteristicasComodidades.filter(c => c.id_grupo_caracteristica == 1)"
+                      v-for="item in filteredCaracteristicas.filter(c => c.id_grupo_caracteristica == 1)"
                       v-if="form.id_inmueble.caracteristicas[getCaracteristicasIndex(item.id_caracteristica.id)]"
                       :key="item.id"
                       class="field"
@@ -262,7 +263,7 @@
                   </b-field>
                 </div>
 
-                <div v-if="!isEdificio">
+                <div>
                   <h6 class="title is-6">
                     Amoblamiento
                   </h6>
@@ -273,7 +274,7 @@
                     class="mb-4"
                   >
                     <div
-                      v-for="item in caracteristicasComodidades.filter(c => c.id_grupo_caracteristica == 2)"
+                      v-for="item in filteredCaracteristicas.filter(c => c.id_grupo_caracteristica == 2)"
                       v-if="form.id_inmueble.caracteristicas[getCaracteristicasIndex(item.id_caracteristica.id)]"
                       :key="item.id"
                       class="field"
@@ -298,7 +299,7 @@
                   class="mb-4"
                 >
                   <div
-                    v-for="item in caracteristicasComodidades.filter(c => c.id_grupo_caracteristica == null)"
+                    v-for="item in filteredCaracteristicas.filter(c => c.id_grupo_caracteristica == null)"
                     v-if="form.id_inmueble.caracteristicas[getCaracteristicasIndex(item.id_caracteristica.id)]"
                     :key="item.id"
                     class="b-field"
@@ -324,7 +325,6 @@
               </h3>
 
               <b-field
-                v-if="!isEdificio"
                 label="Descripción"
               >
                 <b-input
@@ -438,7 +438,7 @@ export default {
             return caracteristicas
         },
 
-        caracteristicasComodidades() {
+        filteredCaracteristicas() {
             var caracteristicas = this.allCaracteristicasTipoInmueble.filter(c => c.id_tipo_caracteristica == 2 && c.id_tipo_inmueble == this.oneInmueble.id_inmueble.id_tipo_inmueble.id)
 
             return caracteristicas
