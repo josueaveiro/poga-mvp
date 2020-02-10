@@ -121,8 +121,13 @@
                           <td>{{ item.nombre }}</td>
                           <td>
                             <b-input
+<<<<<<< HEAD
+                              v-model="form.estados_inmueble[getEstadosInmuebleIndex(item)].cantidad"
+                              min="0"
+=======
                               v-if="estadosInmueble[getEstadosInmuebleIndex(item)]"
                               v-model="estadosInmueble[getEstadosInmuebleIndex(item)].cantidad"
+>>>>>>> b7fd028c9e3f405cba8f189ac111a587ca1efcc8
                               type="number"
                             />
                           </td>
