@@ -21,7 +21,6 @@
 
 .navbar-brand {
   padding: 0;
-  width: 100%;
 
   img {
     width: 6rem;
@@ -55,10 +54,7 @@
           >
             Cuenta
           </b-navbar-item>
-          <b-navbar-dropdown
-            v-if="showRentasMenu"
-            label="Rentas"
-          >
+          <b-navbar-dropdown v-if="showRentasMenu" label="Rentas">
             <b-navbar-item
               tag="router-link"
               :to="{ name: 'Crear Renta' }"
@@ -66,10 +62,7 @@
               Crear
             </b-navbar-item>
           </b-navbar-dropdown>
-          <b-navbar-dropdown
-            v-if="showInmueblesMenu"
-            label="Inmuebles"
-          >
+          <b-navbar-dropdown v-if="showInmueblesMenu" label="Inmuebles">
             <b-navbar-item
               tag="router-link"
               :to="{ name: 'Crear Inmueble' }"
