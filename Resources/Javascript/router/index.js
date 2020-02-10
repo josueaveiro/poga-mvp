@@ -175,6 +175,11 @@ router.addRoutes([
         path: "/completa-tu-registro"
     },
     {
+        name: "Retorno Pagos",
+        path: "/pagos/retorno",
+	redirect: "/cuenta/mis-pagos",
+    },
+    {
         component: asyncView("legal/TermsAndConditions"),
         name: "Terms and Conditions",
         path: "/terminos-y-condiciones",
@@ -192,9 +197,6 @@ router.addRoutes([
     {
         beforeEnter: multiguard([middleware.redirectIfNotAuthenticated, middleware.redirectIfAccountIsIncomplete]),
         component: asyncView("Rentas/Show"),
-        meta: {
-            footer: false
-        },
         name: "Ver Renta",
         path: "/rentas/:id"
     },
