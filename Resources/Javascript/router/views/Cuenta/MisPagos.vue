@@ -23,7 +23,7 @@
             <option value="OTRO">
               Solicitud de pago
             </option>
-            <option value="COMISION">
+            <option value="COMISION_POGA">
               Comisión
             </option>
           </b-select>
@@ -214,7 +214,7 @@
         >
           Exportar a Excel
         </b-button>
-        <PagosTable :items="allPagares.filter(pagare => pagare.enum_estado === 'PENDIENTE' && pagare.enum_clasificacion_pagare !== 'COMISION')" />
+        <PagosTable :items="allPagares.filter(pagare => pagare.enum_estado === 'PENDIENTE' && pagare.enum_clasificacion_pagare !== 'COMISION_POGA')" />
       </b-tab-item>
 
       <b-tab-item label="Pagados">
@@ -234,7 +234,7 @@
         >
           Exportar a Excel
         </b-button>
-        <PagosTable :items="allPagares.filter(pagare => pagare.enum_estado === 'PAGADO' && pagare.enum_clasificacion_pagare !== 'COMISION')" />
+        <PagosTable :items="allPagares.filter(pagare => (pagare.enum_estado === 'PAGADO' || pagare.enum_estado === 'TRANSFERIDO') && pagare.enum_clasificacion_pagare !== 'COMISION_POGA')" />
       </b-tab-item>
 
       <b-tab-item
@@ -257,7 +257,7 @@
         >
           Exportar a Excel
         </b-button>
-        <PagosTable :items="allPagares.filter(pagare => pagare.enum_estado === 'ANULADO' && pagare.enum_clasificacion_pagare !== 'COMISION')" />
+        <PagosTable :items="allPagares.filter(pagare => pagare.enum_estado === 'ANULADO' && pagare.enum_clasificacion_pagare !== 'COMISION_POGA')" />
       </b-tab-item>
 
       <b-tab-item
