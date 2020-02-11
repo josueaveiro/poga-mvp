@@ -51,7 +51,7 @@
             :has-navigation="true"
           >
             <b-step-item
-              label=""
+              label="Ubicación"
               :clickable="true"
             >
               <h3 class="title mb-5 is-3">
@@ -117,7 +117,7 @@
             </b-step-item>
 
             <b-step-item
-              label=""
+              label="Características"
               :clickable="true"
             >
               <h3 class="title mb-5 is-3">
@@ -159,11 +159,27 @@
                 />
               </b-field>
 
+              <div
+                v-for="item in filteredCaracteristicas.filter(c => c.id_grupo_caracteristica == 3)"
+                :key="item.id"
+                class="field"
+              >
+                <b-field :label="item.id_caracteristica.nombre">
+                  <b-input
+                    v-model="form.id_inmueble.caracteristicas[item.id]"
+                    :name="'id_inmueble.caracteristicas[' + item.id + ']'"
+                    :disabled="true"
+                    type="number"
+                    icon-pack="fas"
+                  />
+                </b-field>
+              </div>
+
               <div class="is-divider" />
 
               <b-field label="Reglamento de propiedad">
                 <div
-                  v-if="oneInmueble.id_inmueble.documentos"
+                  v-if="oneInmueble.id_inmueble.documentos.length > 0"
                   class="content"
                 >
                   <article
@@ -201,7 +217,7 @@
             </b-step-item>
 
             <b-step-item
-              label=""
+              label="Amenities"
               :visible="isEdificio"
             >
               <h3 class="subtitle is-3">
@@ -209,26 +225,24 @@
               </h3>
 
               <div
-                v-for="item in caracteristicasAmenities"
+                v-for="item in filteredCaracteristicas"
+                v-if="form.id_inmueble.caracteristicas[item.id]"
                 :key="item.id"
+                class="field"
               >
-                <div
-                  v-if="form.id_inmueble.caracteristicas[getCaracteristicasIndex(item.id_caracteristica.id)]"
-                  class="field"
+                <b-switch
+                  v-model="form.id_inmueble.caracteristicas[item.id]"
+                  :name="'id_inmueble.caracteristicas[' + item.id + ']'"
+                  :value="true"
+                  :disabled="true"
                 >
-                  <b-switch
-                    :name="'id_inmueble.caracteristicas[' + item.id_caracteristica.id + ']'"
-                    :value="true"
-                    :disabled="true"
-                  >
-                    {{ item.id_caracteristica.nombre }}
-                  </b-switch>
-                </div>
+                  {{ item.id_caracteristica.nombre }}
+                </b-switch>
               </div>
             </b-step-item>
 
             <b-step-item
-              label=""
+              label="Comodidades"
               :clickable="true"
               :visible="!isEdificio"
             >
@@ -248,13 +262,14 @@
                   >
                     <div
                       v-for="item in filteredCaracteristicas.filter(c => c.id_grupo_caracteristica == 1)"
-                      v-if="form.id_inmueble.caracteristicas[getCaracteristicasIndex(item.id_caracteristica.id)]"
+                      v-if="form.id_inmueble.caracteristicas[item.id]"
                       :key="item.id"
                       class="field"
                     >
                       <b-switch
+                        v-model="form.id_inmueble.caracteristicas[item.id]"
+                        :name="'id_inmueble.caracteristicas[' + item.id + ']'"
                         :value="true"
-                        :name="'id_inmueble.caracteristicas[' + item.id_caracteristica.id + ']'"
                         :disabled="true"
                       >
                         {{ item.id_caracteristica.nombre }}
@@ -275,12 +290,13 @@
                   >
                     <div
                       v-for="item in filteredCaracteristicas.filter(c => c.id_grupo_caracteristica == 2)"
-                      v-if="form.id_inmueble.caracteristicas[getCaracteristicasIndex(item.id_caracteristica.id)]"
+                      v-if="form.id_inmueble.caracteristicas[item.id]"
                       :key="item.id"
                       class="field"
                     >
                       <b-switch
-                        :name="'id_inmueble.caracteristicas[' + item.id_caracteristica.id + ']'"
+                        v-model="form.id_inmueble.caracteristicas[item.id]"
+                        :name="'id_inmueble.caracteristicas[' + item.id + ']'"
                         :value="true"
                         :disabled="true"
                       >
@@ -300,12 +316,12 @@
                 >
                   <div
                     v-for="item in filteredCaracteristicas.filter(c => c.id_grupo_caracteristica == null)"
-                    v-if="form.id_inmueble.caracteristicas[getCaracteristicasIndex(item.id_caracteristica.id)]"
+                    v-if="form.id_inmueble.caracteristicas[item.id]"
                     :key="item.id"
-                    class="b-field"
+                    class="field"
                   >
                     <b-switch
-                      :name="'id_inmueble.caracteristicas[' + item.id_caracteristica.id + ']'"
+                      :name="'id_inmueble.caracteristicas[' + item.id + ']'"
                       :value="true"
                       :disabled="true"
                     >
@@ -317,7 +333,7 @@
             </b-step-item>
 
             <b-step-item
-              label=""
+              label="Descripción"
               :clickable="true"
             >
               <h3 class="title mb-5 is-3">
@@ -352,7 +368,7 @@
                     Anterior
                   </b-button>
                   <b-button
-                    v-if="activeStep === 0"
+                    v-else
                     :disabled="previous.disabled"
                     icon-pack="fas"
                     icon-left="chevron-left"
@@ -364,7 +380,7 @@
                 </div>
                 <div class="level-right">
                   <b-button
-                    v-if="activeStep !== 3"
+                    v-if="activeStep < 4"
                     icon-pack="fas"
                     icon-right="chevron-right"
                     type="is-primary"
@@ -373,7 +389,7 @@
                     Siguiente
                   </b-button>
                   <b-button
-                    v-if="activeStep === 3"
+                    v-else
                     icon-pack="fas"
                     icon-right="chevron-right"
                     type="is-primary"
@@ -396,7 +412,6 @@ import { alertErrorMessage, deepClone } from "@/utilities/helpers"
 import { authComputed } from "@/store/helpers"
 import { caracteristicasTipoInmuebleComputed, caracteristicasTipoInmuebleMethods, formatosComputed, formatosMethods, inmueblesComputed, inmueblesMethods } from "@mvp/store/helpers"
 import { gmaps } from "@/utilities/mixins/gmaps"
-import { documentsMethods, photosMethods } from "@/store/helpers"
 import { mapCaracteristicasTipoInmuebleList } from "@mvp/store/modules/caracteristicasTipoInmueble/actions"
 
 import app from "@/app"
@@ -413,12 +428,9 @@ export default {
 
     data() {
         return {
-            test: 0,
-            fotos: [],
             activeStep: 0,
             form: new Form(fields),
-            prepared: false,
-            url: app.apiUrl + "/inmuebles"
+            prepared: false
         }
     },
 
@@ -428,44 +440,17 @@ export default {
         ...formatosComputed,
         ...inmueblesComputed,
 
-        addressForm() {
-            return this.form.id_direccion
-        },
-
-        caracteristicasAmenities() {
-            var caracteristicas = this.allCaracteristicasTipoInmueble.filter(c => c.id_tipo_inmueble == this.form.id_inmueble.id_tipo_inmueble && c.id_tipo_caracteristica == 2)
-
-            return caracteristicas
-        },
-
         filteredCaracteristicas() {
-            var caracteristicas = this.allCaracteristicasTipoInmueble.filter(c => c.id_tipo_caracteristica == 2 && c.id_tipo_inmueble == this.oneInmueble.id_inmueble.id_tipo_inmueble.id)
-
-            return caracteristicas
+            return this.allCaracteristicasTipoInmueble.filter(c => c.id_tipo_inmueble == this.form.id_inmueble.id_tipo_inmueble && c.id_tipo_caracteristica == 2)
         },
 
-        caracteristicasReglamentoPropiedad() {
-            var caracteristicas = this.allCaracteristicasTipoInmueble.filter(c => c.id_tipo_inmueble == 1 && c.id_tipo_caracteristica == 5)
-
-            return caracteristicas
-        },
-
-        formatosInmueble() {
+        filteredFormatos() {
             return this.allFormatos.map(item => { return { id: item.id, formato: item.formato }})
                 .filter(i => this.form.formatos.includes(i.id))
         },
 
         isEdificio() {
             return this.form.id_inmueble.id_tipo_inmueble === "1"
-        },
-
-        pickedAddressComponents() {
-            return {
-                street_number: ["numeracion", "short_name"],
-                route: ["calle_principal", "long_name"],
-                administrative_area_level_2: ["ciudad", "long_name"],
-                administrative_area_level_1: ["departamento", "long_name"],
-            }
         }
     },
 
@@ -477,24 +462,14 @@ export default {
         }
     },
 
-    beforeDestroy() {
-        this.isDestroying = true
-    },
-
     created() {
         return this.prepare().then(this.prepared = true)
     },
 
     methods: {
         ...caracteristicasTipoInmuebleMethods,
-        ...documentsMethods,
         ...formatosMethods,
         ...inmueblesMethods,
-        ...photosMethods,
-
-        getCaracteristicasIndex(id) {
-            return this.oneInmueble.id_inmueble.caracteristicas.findIndex(item => item.id === id)
-        },
 
         handleNextStep(next) {
             return next.action()
@@ -537,7 +512,7 @@ export default {
                     numeracion: data.id_direccion.numeracion
                 },
                 id_inmueble: {
-                    caracteristicas: data.id_inmueble.caracteristicas,
+                    caracteristicas: mapCaracteristicasTipoInmuebleList(this.allCaracteristicasTipoInmueble.filter(item => item.id_tipo_inmueble == data.id_inmueble.id_tipo_inmueble.id), data.id_inmueble.caracteristicas),
                     descripcion: data.id_inmueble.descripcion,
                     id_tipo_inmueble: data.id_inmueble.id_tipo_inmueble.id.toString(),
                     solicitud_directa_inquilinos: data.id_inmueble.solicitud_directa_inquilinos,
@@ -551,9 +526,6 @@ export default {
         moment,
 
         prepare() {
-            this.action = app.apiUrl + "/inmuebles/" + this.$route.params.id
-            this.url = this.action
-
             var inmueble = this.fetchOneInmueble(this.$route.params.id)
             var formatos = this.fetchAllFormatos()
 
