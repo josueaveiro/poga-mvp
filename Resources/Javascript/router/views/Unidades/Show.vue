@@ -32,7 +32,7 @@
             :has-navigation="true"
           >
             <b-step-item
-              label=""
+              label="Características"
             >
               <h3 class="title is-3">
                 Características generales del Departamento
@@ -41,49 +41,39 @@
               <b-field
                 grouped
                 group-multiline
+              >
                 <b-field
-                label="Piso"
-                :message="getErrorMessage(['piso', 'piso'])"
-                :type="setFieldType(['piso', 'piso'])"
-              >
-                <b-input
-                  v-model="form.piso"
-                  v-validate="'required|numeric'"
-                  data-vv-as="Piso"
-                  name="piso"
-                  :disabled="true"
-                  :max="form.cant_pisos"
-                  min="0"
-                  type="number"
-                />
-              </b-field>
+                  label="Piso"
+                >
+                  <b-input
+                    v-model="form.piso"
+                    name="piso"
+                    :disabled="true"
+                    :max="form.cant_pisos"
+                    min="0"
+                    type="number"
+                  />
+                </b-field>
 
-              <b-field
-                label="Número"
-                :message="getErrorMessage(['numero', 'numero'])"
-                :type="setFieldType(['numero', 'numero'])"
-              >
-                <b-input
-                  v-model="form.numero"
-                  v-validate="'required'"
-                  :disabled="true"
-                  name="numero"
-                  data-vv-as="Numero"
-                  type="text"
-                />
+                <b-field
+                  label="Número"
+                >
+                  <b-input
+                    v-model="form.numero"
+                    :disabled="true"
+                    name="numero"
+                    type="text"
+                  />
+                </b-field>
               </b-field>
 
               <b-field
                 label="Metros cuadrados construidos"
-                :message="getErrorMessage(['area', 'area'])"
-                :type="setFieldType(['area', 'area'])"
               >
                 <b-input
                   v-model="form.area"
-                  v-validate="'required|min_value:15'"
                   :disabled="true"
                   name="area"
-                  data-vv-as="Metros cuadrados"
                   min="15"
                   type="number"
                 />
@@ -91,14 +81,10 @@
 
               <b-field
                 label="Departamento para"
-                :message="getErrorMessage(['id_formato_inmueble', 'id_formato_inmueble'])"
-                :type="setFieldType(['id_formato_inmueble', 'id_formato_inmueble'])"
               >
                 <b-select
                   v-model="form.id_formato_inmueble"
-                  v-validate="'required'"
                   :disabled="true"
-                  data-vv-as="Formato"
                   name="id_formato_inmueble"
                   expanded
                   placeholder="Seleccioná un formato"
@@ -120,7 +106,7 @@
               >
                 <b-field :label="item.id_caracteristica.nombre">
                   <b-input
-                    v-model="caracteristicas[item.id]"
+                    v-model="form.id_inmueble.caracteristicas[item.id]"
                     :name="'id_inmueble.caracteristicas[' + item.id + ']'"
                     :disabled="true"
                     type="number"
@@ -131,7 +117,7 @@
             </b-step-item>
 
             <b-step-item
-              label=""
+              label="Comodidades"
               :clickable="true"
             >
               <h3 class="title mb-5 is-3">
@@ -149,6 +135,7 @@
                 >
                   <div
                     v-for="item in filteredCaracteristicas.filter(c => c.id_grupo_caracteristica == 1)"
+                    v-if="form.id_inmueble.caracteristicas[item.id]"
                     :key="item.id"
                     class="field"
                   >
@@ -172,6 +159,7 @@
                 >
                   <div
                     v-for="item in filteredCaracteristicas.filter(c => c.id_grupo_caracteristica == 2)"
+                    v-if="form.id_inmueble.caracteristicas[item.id]"
                     :key="item.id"
                     class="field"
                   >
@@ -195,6 +183,7 @@
                 >
                   <div
                     v-for="item in filteredCaracteristicas.filter(c => c.id_grupo_caracteristica == null)"
+                    v-if="form.id_inmueble.caracteristicas[item.id]"
                     :key="item.id"
                     class="field"
                   >
@@ -211,7 +200,7 @@
             </b-step-item>
 
             <b-step-item
-              label=""
+              label="Descripción"
               :clickable="true"
             >
               <h3 class="title mb-5 is-3">
@@ -285,23 +274,14 @@
 </template>
 
 <script>
-import app from "@/app"
-import { alertErrorMessage, alertSuccessMessage, deepClone, getSavedState, deleteSavedState, saveState } from "@/utilities/helpers"
+import { alertErrorMessage, deepClone } from "@/utilities/helpers"
 import { authComputed } from "@/store/helpers"
 import { caracteristicasTipoInmuebleComputed, caracteristicasTipoInmuebleMethods, formatosComputed, formatosMethods, unidadesComputed, unidadesMethods } from "@mvp/store/helpers"
-import { dz } from "@/utilities/mixins/dz"
-import { documentsMethods, photosMethods } from "@/store/helpers"
 import { mapCaracteristicasTipoInmuebleList } from "@mvp/store/modules/caracteristicasTipoInmueble/actions"
 import { mapFormatosList } from "@mvp/store/modules/formatos/actions"
 
 import store from "@/store"
-
-import vue2Dropzone from "vue2-dropzone"
-import "vue2-dropzone/dist/vue2Dropzone.min.css"
-
 import Form from "@/utilities/Form"
-
-var csrfToken = document.head.querySelector("meta[name=\"csrf-token\"]").content
 
 var fields = deepClone(store.state.unidades.initialState.one)
 fields.id_inmueble_padre = {
@@ -310,25 +290,13 @@ fields.id_inmueble_padre = {
     }
 }
 
-var token = getSavedState("auth.token")
-
 export default {
-    components: {
-        VueDropzone: vue2Dropzone
-    },
-
-    mixins: [dz],
-
     data() {
         return {
-            action: app.apiUrl + "/unidades",
             activeStep: 0,
             caracteristicas: [],
             form: new Form(fields),
-            method: "put",
             prepared: false,
-            submitted: false,
-            url: app.apiUrl + "/unidades"
         }
     },
 
@@ -356,57 +324,14 @@ export default {
         }
     },
 
-    beforeDestroy() {
-        this.isDestroying = true
-    },
-
     created() {
         return this.prepare().then(this.prepared = true)
     },
 
     methods: {
         ...caracteristicasTipoInmuebleMethods,
-        ...documentsMethods,
         ...formatosMethods,
-        ...photosMethods,
         ...unidadesMethods,
-
-        dzUnfeaturedPhotosSuccess() {
-            alertSuccessMessage("Actualiza un Inmueble", "Tu " + this.oneUnidad.id_inmueble.id_tipo_inmueble.tipo + " fue actualizado.")
-
-            this.$router.push({ name: "Mis Inmuebles" })
-
-            return this.submitted = false
-        },
-
-        formatDireccion() {
-            this.direccion = this.form.id_direccion.calle_principal + "," + this.form.id_direccion.numeracion + "," + this.form.id_direccion.calle_secundaria
-        },
-
-        getErrorMessage(fields) {
-            if (this.form.errors.has(fields[0])||this.$validator.errors.has(fields[1])) {
-                return this.form.errors.get(fields[0])||this.$validator.errors.first(fields[1])
-            }
-        },
-
-        handleCaracteristicas() {
-            var caracteristica, nonEmptyCaracteristicas = []
-
-            Object.entries(this.caracteristicas).forEach(item => {
-                caracteristica = this.allCaracteristicasTipoInmueble.find(c => c.id_caracteristica.id == item[0])
-                console.log(caracteristica)
-
-                if (caracteristica.enum_tipo_campo === "number") {
-                    caracteristica.id_caracteristica.cantidad = item[1]
-                    nonEmptyCaracteristicas.push(caracteristica)
-                } else {
-                    caracteristica.id_caracteristica.cantidad = null
-                    nonEmptyCaracteristicas.push(caracteristica)
-                }
-            })
-
-            this.form.caracteristicas = nonEmptyCaracteristicas
-        },
 
         handleNextStep(next) {
             return next.action()
@@ -462,25 +387,6 @@ export default {
 
                     return caracteristicasTipoInmueble
                 })
-        },
-
-
-        setFieldType(fields) {
-            if (this.form.errors.has(fields[0]) || this.$validator.errors.has(fields[1])) {
-                return "is-danger"
-            }
-        },
-
-        validateAll(fields, next) {
-            return this.$validator.validateAll(fields)
-                .then(result => {
-                    if (result) {
-                        return next.action()
-                    }
-
-                    return false
-                })
-                .catch(false) 
         }
     }
 }
