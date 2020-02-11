@@ -1,12 +1,14 @@
-<style lang="scss" scoped>
-.step-content {
-  min-height: 75vh;
-}
-</style>
-
 <template>
-  <section class="bg-light">
-    <div class="columns is-gapless">
+  <main class="bg-light main">
+    <b-loading
+      :is-full-page="true"
+      :active.sync="oneRentaPending"
+      :can-cancel="false"
+    />
+    <div
+      v-if="!oneRentaPending"
+      class="columns is-gapless"
+    >
       <div class="bg-white column is-7">
         <form>
           <div class="columns">
@@ -19,10 +21,10 @@
                 :has-navigation="true"
               >
                 <b-step-item
-                  label=""
+                  label="Datos"
                   :clickable="true"
                 >
-                  <h3 class="title mb-5 is-3">
+                  <h3 class="title mb-4 is-3">
                     Cláusulas del Contrato de Renta
                   </h3>
 
@@ -59,10 +61,16 @@
                   <div class="columns">
                     <div class="column is-6">
                       <b-field
-                        label="Inmueble"
+                        :label="oneRenta.id_unidad ? 'Departamento nº' : 'Inmueble'"
                         expanded
                       >
-                        {{ oneRenta.id_unidad ? oneRenta.id_unidad.id_inmueble.nombre : oneRenta.id_inmueble.nombre }}
+                        <b-input
+                          v-model="form.id_inmueble"
+                          :disabled="true"
+                          name="id_inmueble"
+                          placeholder="Inmueble"
+                          type="text"
+                        />
                       </b-field>
                     </div>
 
@@ -86,21 +94,13 @@
                       <b-field
                         label="Moneda"
                       >
-                        <b-select
+                        <b-input
                           v-model="form.id_moneda"
-                          v-validate="'required'"
                           :disabled="true"
                           name="id_moneda"
-                          data-vv-as="Moneda"
                           placeholdel="Moneda"
                           expanded
-                        >
-                          <option
-                            value="1"
-                          >
-                            Guaraní
-                          </option>
-                        </b-select>
+                        />
                       </b-field>
                     </div>
  
@@ -131,7 +131,6 @@
                           :disabled="true"
                           placeholder="Notificación de renovación (días)"
                           name="dias_notificacion_previa_renovacion"
-                          data-vv-as="Notificación de renovación"
                           min="0"
                           type="numeric"
                         />
@@ -146,7 +145,6 @@
                           v-model="form.dia_mes_pago"
                           v-validate="'required|numeric|max_value:31'"
                           :disabled="true"
-                          data-vv-as="Día de pago mensual"
                           name="dia_mes_pago"
                           placeholder="Día de pago mensual"
                           type="number"
@@ -160,7 +158,13 @@
                   <div class="columns">
                     <div class="column is-6">
                       <b-field label="¿Es un contrato vigente?">
-                        {{ form.vigente ? 'Sí' : 'No' }}
+                        <b-input
+                          v-model="form.vigente"
+                          :disabled="true"
+                          name="vigente"
+                          placeholder="¿Es un contrato vigente?"
+                          type="text"
+                        />
                       </b-field>
 
                       <b-field
@@ -170,7 +174,6 @@
                           v-model="form.garantia"
                           v-validate="'required'"
                           :disabled="true"
-                          data-vv-as="Depósito de garantía"
                           name="garantia"
                           placeholder="Depósito de garantia"
                           type="number"
@@ -197,7 +200,15 @@
                       <b-field
                         label="¿Incluye cláusula de multa?"
                       >
-                        {{ form.multa ? 'Sí' : 'No' }}
+                        <b-input
+                          v-model="form.garantia"
+                          v-validate="'required'"
+                          :disabled="true"
+                          name="garantia"
+                          placeholder="Depósito de garantia"
+                          type="number"
+                          min="0"
+                        />
                       </b-field>
 
                       <b-field
@@ -209,7 +220,6 @@
                           v-validate="'required_if:multa,true'"
                           :disabled="true"
                           name="monto_multa_dia"
-                          data-vv-as="Monto por cada día de multa"
                           type="number"
                           placeholder="Monto por cada día de multa"
                         />
@@ -224,7 +234,6 @@
                           v-validate="'required|numeric'"
                           :disabled="true"
                           name="dias_multa"
-                          data-vv-as="Días de gracia"
                           type="number"
                           placeholder="Días de gracia"
                         />
@@ -234,10 +243,10 @@
                 </b-step-item>
 
                 <b-step-item
-                  label=""
+                  label="Contrato firmado"
                   :clickable="true"
                 >
-                  <h3 class="title mb-5 is-3">
+                  <h3 class="title mb-4 is-3">
                     Descarga el contrato firmado
                   </h3>
 
@@ -247,11 +256,15 @@
                   >
                     <article
                       v-for="documento in oneRenta.documentos"
+                      :key="documento.id"
                       class="media"
                     >
                       <figure class="media-left">
                         <p class="image is-64x64">
-                          <img :src="documento.thumbnail">
+                          <img
+                            class="is-64x64"
+                            :src="documento.thumbnail"
+                          >
                         </p>
                       </figure>
                       <div class="media-content">
@@ -271,28 +284,23 @@
 
                   <div
                     v-else
-                    class="content has-text-grey has-text-centered"
+                    class="content mb-5 has-text-grey"
                   >
-                    <p>
-                      <b-icon
-                        icon="emoticon-sad"
-                        size="is-large"
-                      />
-                    </p>
                     <p>No hay documentos para descargar.</p>
                   </div>
                 </b-step-item>
 
                 <b-step-item
-                  label=""
+                  label="Estado del Inmueble"
                   :clickable="true"
                 >
-                  <h3 class="title mb-5 is-3">
+                  <h3 class="title mb-4 is-3">
                     Estado del Inmueble al inicio del Contrato
                   </h3>
              
                   <div
-                    v-for="categoria in groupBy(allEstadosInmueble, 'enum_categoria')"
+                    v-for="(categoria, index) in groupBy(allEstadosInmueble, 'enum_categoria')"
+                    :key="index"
                     class="table-container"
                   > 
                     <h5 class="title is-5">
@@ -308,31 +316,25 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <tr v-for="(item, index) in categoria">
+                        <tr
+                          v-for="item in categoria"
+                          :key="item.id"
+                        >
                           <td>{{ item.nombre }}</td>
                           <td>
-                            {{ form.estados_inmueble[getIndex(item)] ? form.estados_inmueble[getIndex(item)].cantidad : 'N/A' }}
+                            {{ form.estados_inmueble[getEstadosInmuebleIndex(item)] ? form.estados_inmueble[getEstadosInmuebleIndex(item)].cantidad : 'N/A' }}
                           </td>
                           <td>
-                            {{ form.estados_inmueble[getIndex(item)] ? form.estados_inmueble[getIndex(item)].reparar : 'N/A' }}
+                            {{ form.estados_inmueble[getEstadosInmuebleIndex(item)] ? form.estados_inmueble[getEstadosInmuebleIndex(item)].reparar : 'N/A' }}
                           </td>
                           <td>
                             <b-button
-                              :disabled="!form.estados_inmueble[getIndex(item)]"
+                              :disabled="!form.estados_inmueble[getEstadosInmuebleIndex(item)].foto"
                               type="is-light"
-                              @click="isImageModalActive = 1"
+                              @click="handleFotoModal(form.estados_inmueble[getEstadosInmuebleIndex(item)].foto)"
                             >
                               Previsualizar
                             </b-button>
-
-                            <b-modal
-                              v-if="form.estados_inmueble[getIndex(item)]"
-                              :active.sync="isImageModalActive"
-                            >
-                              <p class="image is-4by3">
-                                <img :src="'/storage/' + form.estados_inmueble[getIndex(item)].foto">
-                              </p>
-                            </b-modal>
                           </td>
                         </tr>
                       </tbody>
@@ -349,29 +351,57 @@
                       :disabled="true"
                     />
                   </b-field>
+                </b-step-item>
 
-                  <b-button
-                    size="is-large"
-                    type="is-link"
-                    native-type="button"
-                    @click="activeStep = 0"
+                <b-step-item
+                  :clickable="true"
+                  :visible="form.enum_estado === 'FINALIZADO'"
+                  label="Finalización"
+                >
+                  <h3 class="title is-3 mb-4">
+                    Finalización
+                  </h3>
+                  <div class="columns">
+                    <div class="column is-6">
+                      <b-field
+                        label="Fecha de finalización efectiva"
+                      >
+                        <b-input
+                          v-model="form.fecha_finalizacion_contrato"
+                          :disabled="true"
+                          name="fecha_finalizacion_contrato"
+                          placeholder="Fecha de finalización efectiva"
+                          type="text"
+                        />
+                      </b-field>
+                    </div>
+
+                    <div class="column is-6">
+                      <b-field
+                        label="Monto descontado del fondo de garantía"
+                      >
+                        <b-input
+                          v-model="form.monto_descontado_garantia_finalizacion_contrato"
+                          :disabled="true"
+                          name="monto_descontado_garantia_finalizacion_contrato"
+                          placeholder="Monto descontado del fondo de garantía"
+                          type="number"
+                        />
+                      </b-field>
+                    </div>
+                  </div>
+
+                  <b-field
+                    label="Motivo del descuento"            
                   >
-                    Revisar desde el comienzo
-                  </b-button>
-
-                  <div
-                    class="is-divider"
-                    data-content="O"
-                  />
-
-                  <b-button
-                    native-type="button"
-                    size="is-large"
-                    type="is-primary"
-                    @click="$router.push({ name: 'Mis Rentas' })"
-                  >
-                    Volver a "Mis Contratos"
-                  </b-button>
+                    <b-input
+                      v-model="form.motivo_descuento_garantia"
+                      :disabled="true"
+                      name="motivo_descuento_garantia"
+                      placeholder="Motivo del descuento"
+                      type="textarea"
+                    />
+                  </b-field>
                 </b-step-item>
 
                 <template
@@ -381,6 +411,7 @@
                   <div class="level">
                     <div class="level-left">
                       <b-button
+                        v-if="activeStep > 0"
                         :disabled="previous.disabled"
                         icon-pack="fas"
                         icon-left="chevron-left"
@@ -389,9 +420,19 @@
                       >
                         Anterior
                       </b-button>
+                      <b-button
+                        v-else
+                        icon-pack="fas"
+                        icon-left="chevron-left"
+                        type="is-second"
+                        @click.prevent="$router.push({ name: 'Mis Rentas' })"
+                      >
+                        Volver a "Mis Contratos"
+                      </b-button>
                     </div>
                     <div class="level-right">
                       <b-button
+                        v-if="activeStep < 2"
                         :disabled="next.disabled"
                         icon-pack="fas"
                         icon-right="chevron-right"
@@ -399,6 +440,15 @@
                         @click.prevent="handleNextStep(next)"
                       >
                         Siguiente
+                      </b-button>
+                      <b-button
+                        v-else
+                        icon-pack="fas"
+                        icon-right="chevron-right"
+                        type="is-primary"
+                        @click.prevent="$router.push({ name: 'Mis Rentas' })"
+                      >
+                        Volver a "Mis Contratos"
                       </b-button>
                     </div>
                   </div>
@@ -409,19 +459,16 @@
         </form>
       </div>
     </div>
-
-    <PreviewImageModal :is-active="isPreviewImageModalActive" />
-    <NuevoInquilinoModal :is-active="isNuevoInquilinoModalActive" />
-  </section>
+  </main>
 </template>
 
 <script>
-import { alertErrorMessage, alertSuccessMessage, deepClone, getSavedState } from "@/utilities/helpers"
-import { authComputed } from "@/store/helpers"
-import { estadosInmuebleComputed, estadosInmuebleMethods, inmueblesComputed, inmueblesMethods, personasComputed, personasMethods, rentasComputed, rentasMethods } from "@mvp/store/helpers"
+import { deepClone } from "@/utilities/helpers"
+import { estadosInmuebleComputed, estadosInmuebleMethods, rentasComputed, rentasMethods } from "@mvp/store/helpers"
 import { mapEstadosInmuebleList } from "@mvp/store/modules/estadosInmueble/actions"
 
 
+import app from "@/app"
 import groupBy from "lodash/groupBy"
 import moment from "moment"
 import store from "@/store"
@@ -440,33 +487,14 @@ export default {
     },
 
     computed: {
-        ...authComputed,
         ...estadosInmuebleComputed,
-        ...inmueblesComputed,
-        ...personasComputed,
         ...rentasComputed,
-
-        filteredInquilinos() {
-            if (this.busquedaInquilino.length > 4) {
-                return this.personasMap.filter(item => {
-                    return item.toString().toLowerCase().indexOf(this.busquedaInquilino) > -1
-                })
-            }
-
-            return 
-        }
     },
 
     watch: {
-        inquilinoSeleccionado (value) {
-            var tipoDocumento = value.split(":")[0]
-            var documento = value.split(":")[1].replace(/\(/g, "").replace(/\)/g, "").split(" ")[0]
-        
-            var result = this.allPersonas.find(item => { return item[tipoDocumento.toLowerCase()] === documento })
-            if (!result) {
-                this.form.id_inquilino = null
-            } else {
-                this.form.id_inquilino = result.id
+        "$route" (value) {
+            if (value.name === "Ver Renta") {
+                this.prepare()
             }
         }
     },
@@ -477,11 +505,9 @@ export default {
 
     methods: {
         ...estadosInmuebleMethods,
-        ...inmueblesMethods,
-        ...personasMethods,
         ...rentasMethods,
 
-        getIndex(item) {
+        getEstadosInmuebleIndex(item) {
             return this.form.estados_inmueble.findIndex(i => i.id === item.id)
         },
 
@@ -491,16 +517,12 @@ export default {
             return next.action()
         },
 
-        handleFileInputChange(evt, id) {
-            this.oFiles[id] = new FileReader()
-            this.oFiles[id].readAsDataURL(document.getElementById("estado-inmueble-img-" + id).files[0])
-            this.oFiles[id].onload = this.readSuccess
-
-            this.activeOFile = id
-        },
-
-        handlePreviewImage(id) {
-            this.isPreviewImageModalActive = true
+        handleFotoModal(foto) {
+            this.$buefy.modal.open(
+                `<p class="image is-4by3">
+                    <img src="` + app.storagePath + "/" + foto + `" />
+                </p>`
+            )
         },
 
         handlePreviousStep(previous) {
@@ -515,21 +537,25 @@ export default {
                 dias_multa: data.dias_multa,
                 dias_notificacion_previa_renovacion: data.dias_notificacion_previa_renovacion,
                 documentos: data.documentos,
-                estados_inmueble: mapEstadosInmuebleList(data.estados_inmueble),
+                enum_estado: data.enum_estado,
+                estados_inmueble: mapEstadosInmuebleList(this.allEstadosInmueble, data.estados_inmueble),
                 expensas: data.expensas,
                 fecha_fin: moment(data.fecha_fin).format("DD/MM/YYYY"),
+                fecha_finalizacion_contrato: moment(data.fecha_finalizacion_contrato).format("DD/MM/YYYY"),
                 fecha_inicio: moment(data.fecha_inicio).format("DD/MM/YYYY"),
                 garantia: data.garantia,
-                id_inmueble: data.id_inmuble,
+                id_inmueble: data.id_unidad ? data.id_unidad.numero : data.id_inmueble.id_inmueble_padre.nombre,
                 id_inquilino: data.id_inquilino,
-                id_moneda: data.id_moneda,
+                id_moneda: data.id_moneda.abbr,
                 monto: data.monto,
+                monto_comision_inmobiliaria: data.monto_comision_inmobiliaria,
+                monto_descontado_garantia_finalizacion_contrato: data.monto_descontado_garantia_finalizacion_contrato,
                 monto_multa_dia: data.monto_multa_dia,
-                motivo_descuento_garanta: data.motivo_descuenta_garantia,
-                multa: data.multa,
+                motivo_descuento_garantia: data.motivo_descuento_garantia,
+                multa: data.multa ? "Sí" : "No",
                 observacion: data.observacion,
                 renovacion: data.renovacion,
-                vigente: data.vigente,
+                vigente: data.vigente ? "Sí" : "No",
             }
         },
 
@@ -538,10 +564,8 @@ export default {
         prepare() {
             var renta = this.fetchOneRenta(this.$route.params.id)
             var estadosInmueble = this.fetchAllEstadosInmueble()
-            var inmuebles = this.fetchAllInmuebles({ tipoListado: "MisInmuebles", excluir: "con_renta" })
-            var personas = this.fetchAllPersonas()
 
-            return Promise.all([renta, estadosInmueble, inmuebles, personas])
+            return Promise.all([renta, estadosInmueble])
                 .then(values => {
                     if (values[0] && values[1]) {
                         this.form = new Form(this.mapFormData(values[0]))
@@ -549,27 +573,6 @@ export default {
 
                     return values
                 })
-        },
-
-        readSuccess(evt) {
-        },
-
-        setFieldType(fields) {
-            if (this.form.errors.has(fields[0])||this.$validator.errors.has(fields[1])) {
-                return "is-danger"
-            }
-        },
-
-        validateAll(fields, next) {
-            return this.$validator.validateAll(fields)
-                .then(result => {
-                    if (result) {
-                        return next.action()
-                    }
-
-                    return false
-                })
-                .catch(false)
         }
     }
 }
