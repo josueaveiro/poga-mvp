@@ -228,10 +228,13 @@ export default {
                                 var response = result.value.response
                                 if (response.status !== 200) {
                                     var message = response.data ? response.data.message : response.message
-                                    return alertErrorMessage("Anulación de Pago", message)
+                                    alertErrorMessage("Anulación de Pago", message)
                                 } else {
-                                    return alertSuccessMessage("Hecho", "El pago fue anulado.")
+                                    this.$parent.$parent.$parent.prepare()
+                                    alertSuccessMessage("Hecho", "El pago fue anulado.")
                                 }
+
+                                return response
                             })
                             .catch(error => {
                                 var message = error.data ? error.data.message : error.message
@@ -269,10 +272,21 @@ export default {
                             return null
                         }
 
-                        return alertSuccessMessage("Hecho", "El pago fue anulado.")
+                        var response = result.value.response
+                        if (response.status !== 200) {
+                            var message = response.data ? response.data.message : response.message
+                            alertErrorMessage("Anulación de Pago", message)
+                        } else {
+                            this.$parent.$parent.$parent.prepare()
+                            alertSuccessMessage("Hecho", "El pago fue anulado.")
+                        }
+
+                        return response
                     })
                     .catch(error => {
-                        return alertErrorMessage("Ups...", error.data.message||error.message)
+                        var message = error.data ? error.data.message : error.message
+                        alertErrorMessage(message)
+                        return message
                     })
             }
         },
