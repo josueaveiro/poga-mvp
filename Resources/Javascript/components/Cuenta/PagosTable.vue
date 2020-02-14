@@ -202,9 +202,61 @@ export default {
                 .then(response => {
                     if (response) {
                         var boleta = response.data.data.debt
-                        var multa = boleta.description.items.find(item => item.label.indexOf("Multa") > -1)
-                        if (multa) {
-                            html = "<p class='mb-3'>No es posible anular un pago de renta para un contrato activo. Sin embargo, puede anular el pago de multa asociado:</p><p class='mb-3'><i>" + multa.label + ": " + formatMoney(multa.amount.currency, multa.amount.value) + "</i></p><p>Una vez anulada no se generarán multas adicionales por la renta del mes asociado.</p><strong>Esta operación no se puede revertir</strong>.<br>¿Confirma la operación?</p>"
+                        if (pagare.id_renta.enum_estado === "ACTIVO") {
+                            var multa = boleta.description.items.find(item => item.label.indexOf("Multa") > -1)
+                            if (multa) {
+                                html = "<p class='mb-3'>No es posible anular un pago de renta para un contrato activo. Sin embargo, puede anular el pago de multa asociado:</p><p class='mb-3'><i>" + multa.label + ": " + formatMoney(multa.amount.currency, multa.amount.value) + "</i></p><p>Una vez anulada no se generarán multas adicionales por la renta del mes asociado.</p><strong>Esta operación no se puede revertir</strong>.<br>¿Confirma la operación?</p>"
+    
+                                app.$swal({
+                                    title: "Anulación de Pago",
+                                    html: html,
+                                    type: "warning",
+                                    showCancelButton: true,
+                                    cancelButtonText: "No, cancelar",
+                                    confirmButtonText: "Sí, estoy seguro",
+                                    showLoaderOnConfirm: true,
+                                    preConfirm: ()=> {
+                                        return this.anularPagareRenta(pagare.id)
+                                    },
+                                    allowOutsideClick: false,
+                                })
+                                .then(result => {
+                                    var dismiss = result.dismiss
+                                    if (dismiss) {
+                                        return null
+                                    }
+
+                                    var value = result.value
+                                    if (!value.pagare) {
+                                        var response = value.response
+                                        var message = response.data ? response.data.message : response.message
+                                        alertErrorMessage("Anulación de Pago", message)
+                                    } else {
+                                        this.$parent.$parent.$parent.prepare()
+                                        alertSuccessMessage("Hecho", "El pago fue anulado.")
+                                    }
+
+                                    return response
+                                })
+                                .catch(error => {
+                                    var message = error.data ? error.data.message : error.message
+                                    alertErrorMessage(message)
+                                    return message
+                                })
+                            } else {
+                                html = "<p class='mb-3'>No es posible anular un pago de renta para un contrato activo. Sin embargo, puede anular el pago de multa asociado:</p><p class='mb-3'><i>No hay pagos de multa asociados.</i></p>"
+    
+                                alertInfoMessage("Anulación de Pago", html)
+                            }
+                        } else if (pagare.id_renta.enum_estado === 'FINALIZADO') {
+                            var items = boleta.description.items
+                            html = "<p class='mb-3'>Está a punto de anular un pago renta para un contrato finalizado. Serán anulados los siguientes conceptos:</p>"
+
+                            items.forEach(item => {
+                                html = html + "<p class='mb-3'><i>" + item.label + ": " + formatMoney(item.amount.currency, item.amount.value) + "</i></p>"
+                            })
+
+                            html = html + "<strong>Esta operación no se puede revertir</strong>.<br>¿Confirma la operación?</p>"
 
                             app.$swal({
                                 title: "Anulación de Pago",
@@ -242,10 +294,6 @@ export default {
                                 alertErrorMessage(message)
                                 return message
                             })
-                        } else {
-                            html = "<p class='mb-3'>No es posible anular un pago de renta para un contrato activo. Sin embargo, puede anular el pago de multa asociado:</p><p class='mb-3'><i>No hay pagos de multa asociados.</i></p>"
-
-                            alertInfoMessage("Anulación de Pago", html)
                         }
                     }
 
