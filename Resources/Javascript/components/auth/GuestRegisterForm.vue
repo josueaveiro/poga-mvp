@@ -129,7 +129,7 @@
           :disabled="submitted"
           class="is-medium"
         >
-          Al registrarme declaro que acepto los <RouterLink :to="{ name: 'TermsAndConditions' }">
+          Al registrarme declaro que acepto los <RouterLink :to="{ name: 'Terms and Conditions' }">
             Términos y Condiciones de Uso
           </RouterLink>.
         </b-checkbox>
