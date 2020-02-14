@@ -7,7 +7,7 @@
             Reenviá tu invitación de registro
           </h1>
           <p class="mb-3">
-            Ingresá tu dirección de correo electrónico:
+            Ingresá tu Email, CI o RUC:
           </p>
           <ReenviarInvitacionRegistroForm />
         </div>
