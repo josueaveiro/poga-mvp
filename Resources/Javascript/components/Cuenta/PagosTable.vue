@@ -69,7 +69,7 @@
         sortable
       >
         <template>
-          {{ format_price((props.row.enum_clasificacion_pagare === 'COMISION_POGA' ? (props.row.id_pagare_padre.monto - props.row.monto) : props.row.total)) }}
+          {{ formatMoney(props.row.id_moneda.moneda, (props.row.enum_clasificacion_pagare === 'COMISION_POGA' ? (props.row.id_pagare_padre.monto - props.row.monto) : props.row.total)) }}
         </template>
       </b-table-column>
 
@@ -123,12 +123,19 @@
             </b-dropdown-item>
 
             <b-dropdown-item
-              v-if="user.role_id == '4'"
-              :disabled="true"
+              :disabled="props.row.enum_estado !== 'PENDIENTE' || user.role_id !== '4'"
               has-link="true"
               aria-role="listitem"
             >
               <a
+                v-if="props.row.enum_estado === 'PENDIENTE'"
+                href="javascript:void(0)"
+                @click="handleAnularPagare(props.row)"
+              >
+                Anular
+              </a>
+              <a
+                v-else
                 class="is-disabled"
                 href="javascript:void(0)"
               >
@@ -157,10 +164,12 @@
 </template>
 
 <script>
-import { alertErrorMessage, alertSuccessMessage } from "@/utilities/helpers"
+import { alertErrorMessage, alertSuccessMessage, alertInfoMessage } from "@/utilities/helpers"
 import { authComputed } from "@/store/helpers"
+import { formatMoney } from "@mvp/utilities/helpers"
 import { pagaresMethods, usersComputed } from "@mvp/store/helpers"
 
+import app from "@/app"
 import moment from "moment"
 
 export default {
@@ -184,21 +193,88 @@ export default {
     methods: {
         ...pagaresMethods,
 
-        format_price(price) {
-            return Number(price).toLocaleString(undefined, { style: "currency", currency: "PYG" })
-        },
+        formatMoney,
 
-        handleAnularPago(id) {
-            return this.anularPagareRenta(id)
-                .then(value => {
-                    if (value) {
-                        this.$parent.prepare()
-                        return alertSuccessMessage("Mis Pagos", "El pago fue anulado.")
+        handleAnularPagare(pagare) {
+            var html
+            if (pagare.enum_clasificacion_pagare === "RENTA") {
+                window.axios.get(app.apiUrl + "/pagos/" + pagare.id)
+                .then(response => {
+                    if (response) {
+                        var boleta = response.data.data.debt
+                        var multa = boleta.description.items.find(item => item.label.indexOf("Multa") > -1)
+                        if (multa) {
+                            html = "<p class='mb-3'>No es posible anular un pago de renta para un contrato activo. Sin embargo, puede anular el pago de multa asociado:</p><p class='mb-3'><i>" + multa.label + ": " + formatMoney(multa.amount.currency, multa.amount.value) + "</i></p><p>Una vez anulada no se generarán multas adicionales por la renta del mes asociado.</p><strong>Esta operación no se puede revertir</strong>.<br>¿Confirma la operación?</p>"
+
+                            app.$swal({
+                                title: "Anulación de Pago",
+                                html: html,
+                                type: "warning",
+                                showCancelButton: true,
+                                cancelButtonText: "No, cancelar",
+                                confirmButtonText: "Sí, estoy seguro",
+                                showLoaderOnConfirm: true,
+                                preConfirm: ()=> {
+                                    return this.anularPagareRenta(pagare.id)
+                                },
+                                allowOutsideClick: false,
+                            })
+                            .then(result => {
+                                var dismiss = result.dismiss
+                                if (dismiss) {
+                                    return null
+                                }
+
+                                var response = result.value.response
+                                if (response.status !== 200) {
+                                    var message = response.data ? response.data.message : response.message
+                                    return alertErrorMessage("Anulación de Pago", message)
+                                } else {
+                                    return alertSuccessMessage("Hecho", "El pago fue anulado.")
+                                }
+                            })
+                            .catch(error => {
+                                var message = error.data ? error.data.message : error.message
+                                alertErrorMessage(message)
+                                return message
+                            })
+                        } else {
+                            html = "<p class='mb-3'>No es posible anular un pago de renta para un contrato activo. Sin embargo, puede anular el pago de multa asociado:</p><p class='mb-3'><i>No hay pagos de multa asociados.</i></p>"
+
+                            alertInfoMessage("Anulación de Pago", html)
+                        }
                     }
+
+                    return boleta
                 })
-                .catch(error => {
-                    return alertErrorMessage("Mis Pago", error.data.message||error.message||error)
-                })
+            } else if (pagare.enum_clasificacion_pagare === "OTRO") {
+                html = "Está a punto de anular una solicitud de pago para un contrato activo.<br><strong>Esta operación no se puede revertir</strong>.<br>¿Confirma la operación?</p> "
+
+                app.$swal({
+                    title: "Anulación de Pago",
+                    html: html,
+                    type: "warning",
+                    showCancelButton: true,
+                    cancelButtonText: "No, cancelar",
+                    confirmButtonText: "Sí, estoy seguro",
+                    showLoaderOnConfirm: true,
+                    preConfirm: ()=> {
+                        return this.anularPagareRenta(pagare.id)
+                    },
+                        allowOutsideClick: false,
+                    })
+                    .then(result => {
+                        var dismiss = result.dismiss
+                        if (dismiss) {
+                            return null
+                        }
+
+                        return alertSuccessMessage("Hecho", "El pago fue anulado.")
+                    })
+                    .catch(error => {
+                        return alertErrorMessage("Ups...", error.data.message||error.message)
+                    })
+            }
         },
 
         moment,
