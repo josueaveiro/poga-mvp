@@ -225,8 +225,9 @@ export default {
                                     return null
                                 }
 
-                                var response = result.value.response
-                                if (response.status !== 200) {
+                                var value = result.value
+                                if (!value.pagare) {
+                                    var response = value.response
                                     var message = response.data ? response.data.message : response.message
                                     alertErrorMessage("Anulación de Pago", message)
                                 } else {
@@ -272,8 +273,9 @@ export default {
                             return null
                         }
 
-                        var response = result.value.response
-                        if (response.status !== 200) {
+                        var value = result.value
+                        if (!value.pagare) {
+                            var response = value.response
                             var message = response.data ? response.data.message : response.message
                             alertErrorMessage("Anulación de Pago", message)
                         } else {

@@ -8,7 +8,7 @@ export default {
         return window.axios.put(app.apiUrl + "/finanzas/rentas/anular-pago/" + id)
             .then(response => {
                 const r = response.data.data
-                commit(types.PAGARES_ANULAR_PAGO_RENTA, r)
+                commit(types.PAGARES_FETCH_ONE, r)
                 commit(types.PAGARES_FETCH_ONE_PENDING, false)
                 return r
             })
