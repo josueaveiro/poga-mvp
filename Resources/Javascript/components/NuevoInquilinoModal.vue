@@ -75,7 +75,7 @@
           </b-field>
 
           <b-field
-            label="Email *"
+            label="Email"
             :message="getErrorMessage(['mail', 'mail'])"
             :type="setFieldType(['mail', 'mail'])"
           >
@@ -93,11 +93,11 @@
             :type="setFieldType('telefono')"
             :message="getErrorMessage('telefono')"
           >
-            <the-mask
+            <b-input
               v-model="form.telefono"
-              class="input is-medium"
               placeholder="Teléfono"
-              :mask="['+(###) ###-########']"
+              :size="is-medium"
+              type="number"
             />
           </b-field>
 
@@ -106,11 +106,11 @@
             :type="setFieldType('telefono_celular')"
             :message="getErrorMessage('telefono_celular')"
           >
-            <the-mask
+            <b-input
               v-model="form.telefono_celular"
-              class="input is-medium"
               placeholder="Teléfono celular"
-              :mask="['+(###) ###-########']"
+              :size="is-medium"
+              type="number"
             />
           </b-field>
 
