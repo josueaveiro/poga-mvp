@@ -123,7 +123,8 @@
             </b-dropdown-item>
 
             <b-dropdown-item
-              :disabled="props.row.enum_estado !== 'PENDIENTE' || user.role_id != '4'"
+              v-if="user.role_id == 4"
+              :disabled="props.row.enum_estado !== 'PENDIENTE'"
               has-link="true"
               aria-role="listitem"
             >
