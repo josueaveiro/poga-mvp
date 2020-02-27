@@ -102,7 +102,7 @@
               <p v-if="form.modalidad_propiedad === 'EN_CONDOMINIO'">
                 El edificio en el cual se encuentra el departamento está compuesto por más de un propietario.
               </p>
-              <p v-else>
+              <p v-if="form.modalidad_propiedad === 'UNICO_PROPIETARIO' && form.id_inmueble.id_tipo_inmueble == 1">
                 Todos los departamentos del edificio corresponden a un único propietario.
               </p>
             </b-step-item>
