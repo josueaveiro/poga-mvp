@@ -410,6 +410,7 @@
                             <b-input
                               v-if="estadosInmueble[getEstadosInmuebleIndex(item)]"
                               v-model="estadosInmueble[getEstadosInmuebleIndex(item)].cantidad"
+                              min="0"
                               type="number"
                             />
                           </td>

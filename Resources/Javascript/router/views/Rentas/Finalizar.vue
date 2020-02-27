@@ -111,6 +111,7 @@
                           <th>Cantidad</th>
                           <th>Reemplazar / Reparar</th>
                           <th>Foto</th>
+                          <th class="d-none" />
                         </tr>
                       </thead>
                       <tbody>
@@ -121,13 +122,9 @@
                           <td>{{ item.nombre }}</td>
                           <td>
                             <b-input
-<<<<<<< HEAD
-                              v-model="form.estados_inmueble[getEstadosInmuebleIndex(item)].cantidad"
-                              min="0"
-=======
                               v-if="estadosInmueble[getEstadosInmuebleIndex(item)]"
                               v-model="estadosInmueble[getEstadosInmuebleIndex(item)].cantidad"
->>>>>>> b7fd028c9e3f405cba8f189ac111a587ca1efcc8
+                              min="0"
                               type="number"
                             />
                           </td>
@@ -160,6 +157,7 @@
                               </b-button>
                             </b-field>
                           </td>
+                          <td class="d-none"><input type="hidden" v-model="estadosInmueble[getEstadosInmuebleIndex(item)].finalizado" value="1" /></td>
                         </tr>
                       </tbody>
                     </table>

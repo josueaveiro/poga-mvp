@@ -36,7 +36,7 @@
                   label=""
                   :clickable="true"
                 >
-                  <h4 class="subtitle is-4">
+                  <h4 class="title is-4">
                     Registro de estado del inmueble
                   </h4>
                   <h5 class="subtitle mb-5 is-4">
@@ -70,6 +70,7 @@
                             <b-input
                               v-if="estadosInmueble[getEstadosInmuebleIndex(item)]"
                               v-model="estadosInmueble[getEstadosInmuebleIndex(item)].cantidad"
+                              min="0"
                               type="number"
                             />
                           </td>
