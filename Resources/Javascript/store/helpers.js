@@ -120,6 +120,30 @@ export const inmueblesMethods = {
     )
 }
 
+export const monedasComputed = {
+    ...mapGetters("monedas", [
+        "allMonedasPending",
+        "oneMonedaPending"
+    ]),
+
+    ...mapState(
+        "monedas", {
+            allMonedas: state => state.all,
+            oneMoneda: state => state.one,
+        }
+    ),
+}
+
+export const monedasMethods = {
+    ...mapActions(
+        "monedas", [
+            "deleteOneMoneda",
+            "fetchAllMonedas",
+            "fetchOneMoneda",
+        ]
+    )
+}
+
 export const pagaresComputed = {
     ...mapGetters("pagares", [
         "allPagaresPending",
