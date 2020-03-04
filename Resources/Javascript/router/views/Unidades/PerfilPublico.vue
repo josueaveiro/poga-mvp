@@ -20,7 +20,10 @@
       <slide v-if="oneUnidad.id_inmueble.featured_photo">
         <img :src="oneUnidad.id_inmueble.featured_photo.url">
       </slide>
-      <slide v-for="photo in oneUnidad.id_inmueble.unfeatured_photos">
+      <slide
+        v-for="photo in oneUnidad.id_inmueble.unfeatured_photos"
+        :key="photo.id"
+      >
         <img :src="photo.url">
       </slide>
     </carousel>
@@ -28,7 +31,7 @@
       <div class="columns box">
         <div class="column is-7">
           <p class="has-text-primary mb-3">
-            {{ oneUnidad.id_inmueble.direccion }}
+            {{ oneUnidad.id_inmueble_padre.id_inmueble.direccion }}
           </p>
           <h2 class="title is-2">
             {{ oneUnidad.id_inmueble_padre.nombre }}
@@ -111,8 +114,8 @@
             >
               <b-tag
                 v-for="item in filteredCaracteristicas.filter(c => c.id_grupo_caracteristica == 1)"
-                :key="item.id"
                 v-if="oneUnidad.id_inmueble.caracteristicas[getCaracteristicasIndex(item.id_caracteristica.id)]"
+                :key="item.id"
                 class="is-primary mr-2"
               >
                 {{ item.id_caracteristica.nombre }}
@@ -161,8 +164,8 @@
             class="mb-4"
           >
             <b-tag
-              v-if="oneUnidad.id_inmueble.caracteristicas[getCaracteristicasIndex(item.id_caracteristica.id)]"
               v-for="item in filteredCaracteristicas.filter(c => c.id_grupo_caracteristica == null)"
+              v-if="oneUnidad.id_inmueble.caracteristicas[getCaracteristicasIndex(item.id_caracteristica.id)]"
               :key="item.id"
               class="is-primary"
             >
@@ -191,6 +194,7 @@
 </template>
 
 <script>
+import { alertErrorMessage } from "@/utilities/helpers"
 import { authComputed } from "@/store/helpers"
 import { caracteristicasTipoInmuebleComputed, caracteristicasTipoInmuebleMethods, formatosComputed, formatosMethods, unidadesComputed, unidadesMethods } from "@mvp/store/helpers"
 import { gmaps } from "@/utilities/mixins/gmaps"
