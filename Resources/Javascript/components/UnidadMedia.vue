@@ -25,6 +25,7 @@
               v-if="user.role_id == 4"
               :to="{ name: 'Perfil Publico Unidad', params: { id: item.id }}"
               class="level-item"
+              target="_blank"
             >
               Link público
             </RouterLink>

@@ -24,6 +24,7 @@
             <RouterLink
               v-if="user.role_id == 4"
               :to="{ name: 'Perfil Publico Inmueble', params: { id: item.id }}"
+              target="_blank"
               class="level-item"
             >
               Link público
