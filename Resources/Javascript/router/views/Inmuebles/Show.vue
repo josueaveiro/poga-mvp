@@ -218,6 +218,7 @@
 
             <b-step-item
               label="Amenities"
+              :clickable="true"
               :visible="isEdificio"
             >
               <h3 class="subtitle is-3">
@@ -233,7 +234,7 @@
                 <b-switch
                   v-model="form.id_inmueble.caracteristicas[item.id]"
                   :name="'id_inmueble.caracteristicas[' + item.id + ']'"
-                  :value="true"
+                  :true-value="typeof(form.id_inmueble.caracteristicas[item.id]) == 'number' ? '1' : true"
                   :disabled="true"
                 >
                   {{ item.id_caracteristica.nombre }}
@@ -504,7 +505,7 @@ export default {
                 formatos: data.id_inmueble.formatos,
                 id_direccion: {
                     calle_principal: data.id_direccion.calle_principal,
-                    calle_secundario: data.id_direccion.calle_secundaria,
+                    calle_secundaria: data.id_direccion.calle_secundaria,
                     ciudad: data.id_direccion.ciudad,
                     departamento: data.id_direccion.departamento,
                     latitud: data.id_direccion.latitud,
