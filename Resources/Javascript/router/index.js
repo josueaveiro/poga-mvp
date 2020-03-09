@@ -113,7 +113,7 @@ router.addRoutes([
         component: asyncView("Home"),
         name: "Home",
         path: "/",
-        redirect: "/cuenta",
+        redirect: "/cuenta/mis-inmuebles",
     },
     {
         beforeEnter: middleware.redirectIfAuthenticated,
@@ -126,11 +126,17 @@ router.addRoutes([
     },
     {
         component: asyncView("Inmuebles/PerfilPublico"),
+        meta: {
+            header: "C"
+        },
         name: "Perfil Publico Inmueble",
         path: "/inmuebles/:id/perfil-publico",
     },
     {
         component: asyncView("Unidades/PerfilPublico"),
+        meta: {
+            header: "C"
+        },
         name: "Perfil Publico Unidad",
         path: "/unidades/:id/perfil-publico",
     },
@@ -177,7 +183,7 @@ router.addRoutes([
     {
         name: "Retorno Pagos",
         path: "/pagos/retorno",
-	redirect: "/cuenta/mis-pagos",
+        redirect: "/cuenta/mis-pagos",
     },
     {
         component: asyncView("legal/TermsAndConditions"),
