@@ -36,6 +36,14 @@
                 :to="{ name: 'Mis Pagos' }"
               />
             </b-menu-list>
+            <b-menu-list label="Ayuda">
+              <b-menu-item
+                label="Contrato modelo"
+                tag="a"
+                href="/storage/doc/Contrato_de_locación_de_Inmueble_modelo_POGA_07012020.docx"
+                target="_blank"
+              />
+            </b-menu-list>
             <b-menu-list label="Sesión">
               <b-menu-item
                 label="Cerrar Sesión"
