@@ -139,9 +139,11 @@
                     expanded
                   >
                     <option
-                      value="1"
+                      v-for="item in allMonedas"
+                      :key="item.id"
+                      :value="item.id"
                     >
-                      Guaraní
+                      {{ item.moneda }}
                     </option>
                   </b-select>
                 </b-field>
@@ -200,7 +202,7 @@
 <script>
 import { authComputed } from "@/store/helpers"
 import { alertErrorMessage, alertSuccessMessage } from "@/utilities/helpers"
-import { inmueblesComputed, inmueblesMethods, pagaresComputed, pagaresMethods, personasComputed, personasMethods } from "@mvp/store/helpers"
+import { inmueblesComputed, inmueblesMethods, monedasComputed, monedasMethods, pagaresComputed, pagaresMethods, personasComputed, personasMethods } from "@mvp/store/helpers"
 
 import app from "@/app"
 import moment from "moment"
@@ -230,6 +232,7 @@ export default {
     computed: {
         ...authComputed,
         ...inmueblesComputed,
+        ...monedasComputed,
         ...pagaresComputed,
         ...personasComputed,
     },
@@ -260,6 +263,7 @@ export default {
 
     methods: {
         ...inmueblesMethods,
+        ...monedasMethods,
         ...pagaresMethods,
         ...personasMethods,
 
@@ -328,8 +332,9 @@ export default {
             this.form.id_persona_acreedora = this.user.id_persona.id
 
             var inmuebles = this.fetchAllInmuebles({ tipoListado: "MisInmuebles", excluir: "sin_renta" })
+            var monedas = this.fetchAllMonedas()
 
-            return Promise.all([inmuebles])
+            return Promise.all([inmuebles, monedas])
         },
 
         setFieldType(fields) {
