@@ -169,9 +169,11 @@
                           expanded
                         >
                           <option
-                            value="1"
+                            v-for="item in allMonedas"
+                            :key="item.id"
+                            :value="item.id"
                           >
-                            Guaraní
+                            {{ item.moneda }}
                           </option>
                         </b-select>
                       </b-field>
@@ -539,7 +541,7 @@
 import { alertErrorMessage, alertSuccessMessage, deepClone, getSavedState } from "@/utilities/helpers"
 import { authComputed } from "@/store/helpers"
 import { dz } from "@/utilities/mixins/dz"
-import { estadosInmuebleComputed, estadosInmuebleMethods, inmueblesComputed, inmueblesMethods, personasComputed, personasMethods } from "@mvp/store/helpers"
+import { estadosInmuebleComputed, estadosInmuebleMethods, inmueblesComputed, inmueblesMethods, monedasComputed, monedasMethods, personasComputed, personasMethods } from "@mvp/store/helpers"
 import { groupBy } from "lodash"
 
 import app from "@/app"
@@ -602,6 +604,7 @@ export default {
         ...authComputed,
         ...estadosInmuebleComputed,
         ...inmueblesComputed,
+        ...monedasComputed,
         ...personasComputed,
 
         filteredInquilinos() {
@@ -636,6 +639,7 @@ export default {
     methods: {
         ...estadosInmuebleMethods,
         ...inmueblesMethods,
+        ...monedasMethods,
         ...personasMethods,
 
         dzDocumentsSuccess() {
@@ -700,7 +704,6 @@ export default {
         handleFileInputChange(evt, id) {
             this.oFiles[id] = new FileReader()
             this.oFiles[id].readAsDataURL(document.getElementById("estado-inmueble-img-" + id).files[0])
-            //this.oFiles[id].onload = (e) => this.readSuccess(e, id)
 
             this.activeOFile = id
         },
@@ -748,6 +751,7 @@ export default {
         prepare() {
             var estadosInmueble = this.fetchAllEstadosInmueble()
             var inmuebles = this.fetchAllInmuebles({ tipoListado: "MisInmuebles", excluir: "con_renta" })
+            var monedas = this.fetchAllMonedas()
             var personas = this.fetchAllPersonas()
 
             estadosInmueble.then(value => {
@@ -776,12 +780,10 @@ export default {
                     alertErrorMessage(this.title, error.status.message||error.message||error)
                 })
 
-            return Promise.all([estadosInmueble, inmuebles, personas])
+            return Promise.all([estadosInmueble, monedas, inmuebles, personas])
         },
 
         readSuccess(e, id) {
-            console.log(e)
-            console.log(id)
         },
 
         setFieldType(fields) {
