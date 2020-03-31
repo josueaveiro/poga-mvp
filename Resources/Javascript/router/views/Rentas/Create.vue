@@ -187,12 +187,13 @@
                       >
                         <b-input
                           v-model="form.monto"
-                          v-validate="'required|numeric'"
+                          v-validate="'required'"
                           :disabled="submitted"
                           placeholder="Monto mensual de la renta"
                           name="monto"
                           data-vv-as="Monto mensual de la renta"
                           min="0"
+                          step="0.1"
                           type="numeric"
                         />
                       </b-field>
@@ -322,6 +323,7 @@
                           name="monto_multa_dia"
                           data-vv-as="Monto por cada día de multa"
                           type="number"
+                          step="0.1"
                           placeholder="Monto por cada día de multa"
                         />
                       </b-field>
