@@ -78,6 +78,7 @@
         label="Conversión a Gs."
         sortable
       >
+        <template>
           {{ props.row.enum_clasificacion_pagare === 'COMISION_POGA' ? (props.row.id_moneda.id == 2 ? formatMoney((props.row.id_pagare_padre.monto - props.row.monto) * props.row.cotizacion) : 'N/A') : (props.row.id_moneda.id == 2 ? formatMoney('PYG', (props.row.total * props.row.cotizacion)) : 'N/A') }}
         </template>
       </b-table-column>
