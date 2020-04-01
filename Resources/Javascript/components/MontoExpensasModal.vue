@@ -159,6 +159,7 @@
                     :disabled="submitted"
                     name="monto"
                     placeholder="Monto"
+                    step="0.01"
                     type="number"
                   />
                 </b-field>
