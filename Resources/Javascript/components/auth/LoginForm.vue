@@ -217,7 +217,7 @@ export default {
                     return this.login(response)
                 })
                 .then(()=> {
-                    this.$router.go(intended)
+                    this.$router.push(intended)
 
                     return this.submitted = false
                 })
