@@ -147,7 +147,7 @@
     </b-field>
 
     <div class="is-divider" />
-    <p v-if="form.role_id ===  '4'">
+    <p v-if="form.role_id === '4'">
       ¿No tenés una cuenta? <RouterLink :to="{ name: 'Register'}">
         Registrate
       </RouterLink>
@@ -210,11 +210,14 @@ export default {
         handleLogin() {
             this.submitted = true
 
+            var intended
             return this.form.post(this.action)
                 .then(response => {
-                    this.login(response)
-                    var intended = this.$route.query.intended||response.redirect
-                    this.$router.push(intended)
+                    intended = this.$route.query.intended||response.redirect
+                    return this.login(response)
+                })
+                .then(()=> {
+                    this.$router.go(intended)
 
                     return this.submitted = false
                 })

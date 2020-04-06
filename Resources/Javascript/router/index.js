@@ -51,7 +51,7 @@ router.addRoutes([
                 component: asyncView("Cuenta/DatosPersonales"),
             },
             {
-                beforeEnter: multiguard([middleware.redirectIfNotAuthenticated, middleware.redirectIfAccountIsIncomplete]),
+                beforeEnter: multiguard([middleware.redirectIfNotAuthenticated, middleware.redirectIfMobilePhoneIsIncomplete]),
                 meta: {
                     header: "B",
                 },
@@ -93,6 +93,14 @@ router.addRoutes([
         name: "Fotos Unidad",
         path: "/unidades/:id/fotos",
         component: asyncView("Unidades/Fotos"),
+    },
+    {
+        component: asyncView("Cuenta/MobilePhoneCompletion"),
+        meta: {
+            footer: false
+        },
+        name: "MobilePhoneCompletion",
+        path: "/actualiza-tu-celular",
     },
     {
         beforeEnter: middleware.redirectIfAuthenticated,
