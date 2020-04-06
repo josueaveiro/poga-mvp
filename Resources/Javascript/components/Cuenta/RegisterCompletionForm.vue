@@ -6,7 +6,7 @@
 
 <template>
   <section>
-    <h3 class="title mb-5 is-3">
+    <h3 class="title mb-4 is-3">
       {{ title }}
     </h3>
     <form
@@ -14,26 +14,28 @@
       @keydown="form.errors.clear($event.target.name)"
       @submit.prevent="handleSubmitForm"
     >
-      <b-field
-        label="Tipo de persona"
-        :type="setFieldType('id_persona.enum_tipo_persona')"
-        :message="getErrorMessage('id_persona.enum_tipo_persona')"
-      >
-        <b-select
-          v-model="form.id_persona.enum_tipo_persona"
-          size="is-medium"
-          placeholder="Tipo de persona"
-        >
-          <option value="FISICA">
-            Física
-          </option>
-          <option value="JURIDICA">
-            Jurídica
-          </option>
-        </b-select>
-      </b-field>
-
+      <p class="mb-4">Para crear tu primer contrato de alquiler necesitamos que nos indiques algunos datos adicionales. Los datos de la cuenta bancaria solicitados serán utilizados por Poga para realizar las acreditaciones de los montos cobrados a partir del contrato de alquiler generado y los datos de facturación para la generación de la factura por el servicio.</p>
       <b-field grouped>
+        <b-field
+          label="Tipo *"
+          :type="setFieldType('id_persona.enum_tipo_persona')"
+          :message="getErrorMessage('id_persona.enum_tipo_persona')"
+        >
+          <b-select
+            v-model="form.id_persona.enum_tipo_persona"
+            size="is-medium"
+            placeholder="Tipo de persona"
+            required
+          >
+            <option value="FISICA">
+              Física
+            </option>
+            <option value="JURIDICA">
+              Jurídica
+            </option>
+          </b-select>
+        </b-field>
+
         <b-field
           label="Nombre *" 
           :type="setFieldType('id_persona.nombre')"
@@ -45,12 +47,13 @@
             size="is-medium"
             type="text"
             placeholder="Nombre"
+            required
           />
         </b-field>
    
         <b-field
           v-if="form.id_persona.enum_tipo_persona === 'FISICA'"
-          label="Apellido"
+          label="Apellido *"
           :type="setFieldType('id_persona.apellido')"
           :message="getErrorMessage('id_persona.apellido')"
           expanded
@@ -60,6 +63,7 @@
             size="is-medium"
             type="text"
             placeholder="Apellido"
+            required
           />
         </b-field>
       </b-field>
@@ -78,30 +82,36 @@
         />
       </b-field>
 
-      <b-field
-        label="Teléfono"
-        :type="setFieldType('id_persona.telefono')"
-        :message="getErrorMessage('id_persona.telefono')"
-      >
-        <the-mask
-          v-model="form.id_persona.telefono"
-          class="input is-medium"
-          placeholder="Teléfono"
-          :mask="['+(###) ###-########']"
-        />
-      </b-field>
+      <b-field grouped>
+        <b-field
+          label="Teléfono (solo números)"
+          :type="setFieldType('id_persona.telefono')"
+          :message="getErrorMessage('id_persona.telefono')"
+          expanded
+        >
+          <b-input
+            v-model="form.id_persona.telefono"
+            class="is-medium"
+            placeholder="Teléfono (sólo números)"
+            size="is-medium"
+            type="number"
+          />
+        </b-field>
 
-      <b-field
-        label="Teléfono celular *"
-        :type="setFieldType('id_persona.telefono_celular')"
-        :message="getErrorMessage('id_persona.telefono_celular')"
-      >
-        <the-mask
-          v-model="form.id_persona.telefono_celular"
-          class="input is-medium"
-          placeholder="Teléfono celular"
-          :mask="['+(###) ###-########']"
-        />
+        <b-field
+          label="Teléfono celular (solo números) *"
+          :type="setFieldType('id_persona.telefono_celular')"
+          :message="getErrorMessage('id_persona.telefono_celular')"
+          expanded
+        >
+          <b-input
+            v-model="form.id_persona.telefono_celular"
+            class="is-medium"
+            placeholder="Teléfono celular"
+            size="is-medium"
+            type="number"
+          />
+        </b-field>
       </b-field>
 
       <b-field grouped>
@@ -138,7 +148,7 @@
 
       <b-field
         v-if="form.id_persona.enum_tipo_persona === 'FISICA'"
-        label="Fecha de Nacimiento"
+        label="Fecha de Nacimiento *"
         :addons="false"
         :type="setFieldType('id_persona.fecha_nacimiento')"
         :message="getErrorMessage('id_persona.fecha_nacimiento')"
@@ -152,11 +162,10 @@
           size="is-medium"
           icon="calendar"
           placeholder="Fecha de Nacimiento"
+          required
           extended
         />
       </b-field>
-
-      <div class="is-divider" />
 
       <b-field
         label="Dirección *"
@@ -239,61 +248,62 @@
 
       <div class="is-divider" />
 
-      <div v-if="user.role_id == 4">
-        <h5 class="title is-5">
-          Cuenta bancaria
-        </h5>
-        <h5 class="subtitle is-5">
-          Estos datos serán utilizados para el depósito de los pagos acreditados.
-        </h5>
+      <h5 v-if="user.role_id == 4" class="title is-5">
+        Cuenta bancaria
+      </h5>
+      <h5 v-if="user.role_id == 4" class="subtitle is-5">
+        Estos datos serán utilizados para el depósito de los pagos acreditados.
+      </h5>
 
-        <b-field
-          label="Titular de cuenta *"
-          :type="setFieldType('id_persona.titular_cuenta')"
-          :message="getErrorMessage('id_persona.titular_cuenta')"
-        >
-          <b-input
-            v-model="form.id_persona.titular_cuenta"
-            size="is-medium"
-            type="text"
-            placeholder="Titular de cuenta"
-          />
-        </b-field>
+      <b-field
+        v-if="user.role_id == 4"
+        label="Titular de cuenta *"
+        :type="setFieldType('id_persona.titular_cuenta')"
+        :message="getErrorMessage('id_persona.titular_cuenta')"
+      >
+        <b-input
+          v-model="form.id_persona.titular_cuenta"
+          size="is-medium"
+          type="text"
+          placeholder="Titular de cuenta"
+        />
+      </b-field>
 
-        <b-field
-          label="Banco *"
-          :type="setFieldType('id_persona.id_banco')"
-          :message="getErrorMessage('id_persona.id_banco')"
+      <b-field
+        v-if="user.role_id == 4"
+        label="Banco *"
+        :type="setFieldType('id_persona.id_banco')"
+        :message="getErrorMessage('id_persona.id_banco')"
+      >
+        <b-select
+          v-model="form.id_persona.id_banco"
+          size="is-medium"
+          placeholder="Banco"
+          expanded
         >
-          <b-select
-            v-model="form.id_persona.id_banco"
-            size="is-medium"
-            placeholder="Banco"
-            expanded
+          <option
+            v-for="item in allBancos"
+            :key="item.id"
+            :value="item.id"
           >
-            <option
-              v-for="item in allBancos"
-              :key="item.id"
-              :value="item.id"
-            >
-              {{ item.nombre }}
-            </option>
-          </b-select>
-        </b-field>
+            {{ item.nombre }}
+          </option>
+        </b-select>
+      </b-field>
 
-        <b-field
-          label="Cuenta bancaria *"
-          :type="setFieldType('id_persona.cuenta_bancaria')"
-          :message="getErrorMessage('id_persona.cuenta_bancaria')"
-        >
-          <b-input
-            v-model="form.id_persona.cuenta_bancaria"
-            size="is-medium"
-            type="text"
-            placeholder="Cuenta bancaria"
-          />
-        </b-field>
-      </div>
+      <b-field
+        v-if="user.role_id == 4"
+        label="Cuenta bancaria *"
+        :type="setFieldType('id_persona.cuenta_bancaria')"
+        :message="getErrorMessage('id_persona.cuenta_bancaria')"
+      >
+        <b-input
+          v-model="form.id_persona.cuenta_bancaria"
+          size="is-medium"
+          type="text"
+          placeholder="Cuenta bancaria"
+        />
+      </b-field>
 
       <b-field>
         <b-button
