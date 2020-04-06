@@ -4,7 +4,7 @@ import router from "@/router"
 
 router.addRoutes([
     {
-        beforeEnter: multiguard([middleware.redirectIfNotAuthenticated, middleware.redirectIfAccountIsIncomplete]),
+        beforeEnter: multiguard([middleware.redirectIfNotAuthenticated, middleware.redirectIfMobilePhoneIsIncomplete]),
         component: asyncView("Inmuebles/Create"),
         name: "Crear Inmueble",
         path: "/inmuebles/crear"
@@ -16,7 +16,7 @@ router.addRoutes([
         path: "/rentas/crear",
     },
     {
-        beforeEnter: multiguard([middleware.redirectIfNotAuthenticated, middleware.redirectIfAccountIsIncomplete]),
+        beforeEnter: multiguard([middleware.redirectIfNotAuthenticated, middleware.redirectIfMobilePhoneIsIncomplete]),
         component: asyncView("Inmuebles/Edit"),
         name: "Editar Inmueble",
         path: "/inmuebles/:id/editar"
@@ -28,7 +28,7 @@ router.addRoutes([
         path: "/rentas/:id/editar"
     },
     {
-        beforeEnter: multiguard([middleware.redirectIfNotAuthenticated, middleware.redirectIfAccountIsIncomplete]),
+        beforeEnter: multiguard([middleware.redirectIfNotAuthenticated, middleware.redirectIfMobilePhoneIsIncomplete]),
         component: asyncView("Unidades/Edit"),
         name: "Editar Unidad",
         path: "/unidades/:id/editar"
@@ -42,7 +42,7 @@ router.addRoutes([
     {
         children: [
             {
-                beforeEnter: multiguard([middleware.redirectIfNotAuthenticated, middleware.redirectIfAccountIsIncomplete]),
+                beforeEnter: multiguard([middleware.redirectIfNotAuthenticated]),
                 meta: {
                     header: "B",
                 },
@@ -83,13 +83,13 @@ router.addRoutes([
         path: "/cuenta",
     },
     {
-        beforeEnter: multiguard([middleware.redirectIfNotAuthenticated, middleware.redirectIfAccountIsIncomplete]),
+        beforeEnter: multiguard([middleware.redirectIfNotAuthenticated, middleware.redirectIfMobilePhoneIsIncomplete]),
         name: "Fotos Inmueble",
         path: "/inmuebles/:id/fotos",
         component: asyncView("Inmuebles/Fotos"),
     },	
     {
-        beforeEnter: multiguard([middleware.redirectIfNotAuthenticated, middleware.redirectIfAccountIsIncomplete]),
+        beforeEnter: multiguard([middleware.redirectIfNotAuthenticated, middleware.redirectIfMobilePhoneIsIncomplete]),
         name: "Fotos Unidad",
         path: "/unidades/:id/fotos",
         component: asyncView("Unidades/Fotos"),
@@ -199,7 +199,7 @@ router.addRoutes([
         path: "/terminos-y-condiciones",
     },
     {
-        beforeEnter: multiguard([middleware.redirectIfNotAuthenticated, middleware.redirectIfAccountIsIncomplete]),
+        beforeEnter: multiguard([middleware.redirectIfNotAuthenticated, middleware.redirectIfMobilePhoneIsIncomplete]),
         beforeEnter: middleware.redirectIfNotAuthenticated,
         component: asyncView("Inmuebles/Show"),
         meta: {
@@ -215,7 +215,7 @@ router.addRoutes([
         path: "/rentas/:id"
     },
     {
-        beforeEnter: multiguard([middleware.redirectIfNotAuthenticated, middleware.redirectIfAccountIsIncomplete]),
+        beforeEnter: multiguard([middleware.redirectIfNotAuthenticated, middleware.redirectIfMobilePhoneIsIncomplete]),
         beforeEnter: middleware.redirectIfNotAuthenticated,
         component: asyncView("Unidades/Show"),
         meta: {
