@@ -41,11 +41,11 @@ export const redirectIfAccountIsIncomplete = (to, from, next) => {
 }
 
 export const redirectIfNotAuthenticated = (to, from, next) => {
+    var intended = to.fullpath !== "/logout" ? to.fullPath : "/"
     if (store.getters["auth/isAuthenticated"]) {
         return next()
     }
 
-    var intended = to.fullpath !== "/logout" ? to.fullPath : "/"
     return next({name: "Login", query: { intended: encodeURI(intended) }})
 
 }
@@ -56,4 +56,14 @@ export const redirectIfAuthenticated = (to, from, next) => {
     }
 
     return next({ name: "Home"})
+}
+
+export const redirectIfMobilePhoneIsIncomplete = (to, from, next) => {
+    var intended = to.fullpath !== "/logout" ? to.fullPath : "/"
+
+    if (!store.state.auth.user.id_persona.telefono_celular) {
+        return next({ name: "MobilePhoneCompletion", query: { intended: encodeURI(intended) }})
+    }
+
+    return next()
 }
