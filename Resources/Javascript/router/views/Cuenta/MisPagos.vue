@@ -204,6 +204,7 @@
           :can-cancel="true"
         />
         <b-button
+          v-if="user.role_id == 4"
           :disabled="allPagaresPending"
           :loading="allPagaresPending"
           type="is-primary"
@@ -224,6 +225,7 @@
           :can-cancel="true"
         />
         <b-button
+          v-if="user.role_id == 4"
           :disabled="allPagaresPending"
           :loading="allPagaresPending"
           type="is-primary"
@@ -247,6 +249,7 @@
           :can-cancel="true"
         />
         <b-button
+          v-if="user.role_id == 4"
           :disabled="allPagaresPending"
           :loading="allPagaresPending"
           type="is-primary"
@@ -270,6 +273,7 @@
           :can-cancel="true"
         />
         <b-button
+          v-if="user.role_id == 4"
           :disabled="allPagaresPending"
           :loading="allPagaresPending"
           type="is-primary"

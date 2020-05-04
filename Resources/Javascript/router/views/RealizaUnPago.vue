@@ -36,13 +36,52 @@
             </p>
             <p>Inquilino: {{ onePagare.id_renta.id_inquilino.enum_tipo_persona === 'FISICA' ? (onePagare.id_renta.id_inquilino.nombre + ' ' + onePagare.id_renta.id_inquilino.apellido) : onePagare.id_renta.id_inquilino.nombre }}</p>
             <p>Propietario: {{ onePagare.id_persona_acreedora.enum_tipo_persona === 'FISICA' ? (onePagare.id_persona_acreedora.nombre + ' ' + onePagare.id_persona_acreedora.apellido) : onePagare.id_persona_acreedora.nombre }}</p>
-            <div class="panel-heading">
+
+            <div v-if="!onePagare.ley_emergencia" class="panel-heading">
               <p class="m-0">
                 Total a pagar por el mes {{ moment(boleta.debt.validPeriod.start).format("MM/YYYY") }}
               </p>
               <h3 class="title is-3 m-0">
-                {{ boleta.debt.amount.value }} {{ onePagare.id_moneda.abbr }}
+                {{ formatMoney(boleta.debt.amount.currency, boleta.debt.amount.value) }}
               </h3>
+            </div>
+
+            <div v-else class="panel-heading">
+              <table class="table is-striped">
+                <tbody>
+                  <tr>
+                    <td>Monto del pago mínimo</td>
+                    <td>{{ formatMoney(onePagare.id_moneda.abbr, onePagare.monto_minimo) }}</td>
+                    <td>
+                      <b-radio v-model="form.enum_opcion_pago"
+                        name="enum_opcion_pago"
+                        native-value="MINIMO"
+                      />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Deuda total al cierre</td>
+                    <td>{{ formatMoney(onePagare.id_moneda.abbr, onePagare.monto) }}</td>
+                    <td>
+                      <b-radio v-model="form.enum_opcion_pago"
+                        name="enum_opcion_pago"
+                        native-value="TOTAL"
+                      />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Otro monto</td>
+                    <td><b-input name="monto_manual" v-model="form.monto_manual" type="number" /></td>
+                    <td>
+                      <b-radio v-model="form.enum_opcion_pago"
+                        name="enum_opcion_pago"
+                        native-value="MANUAL"
+                      />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <b-button @click="handleSubmitForm" type="is-primary">Actualizar boleta</b-button>
             </div>
           </div>
         </div>
@@ -61,11 +100,11 @@
               </tr>
               <tr v-for="item in boleta.debt.description.items">
                 <td>{{ item.label }}</td>
-                <td>{{ item.amount.currency }} {{ item.amount.value }}</td>
+                <td>{{ formatMoney(item.amount.currency, item.amount.value) }}</td>
               </tr>
               <tr v-if="!boleta.debt.description.items">
                 <td>{{ boleta.debt.label }}</td>
-                <td>{{ boleta.debt.amount.currency }} {{ boleta.debt.amount.value }}</td>
+                <td>{{ formatMoney(boleta.debt.amount.currency, boleta.debt.amount.value) }}</td>
               </tr>
               <tr v-if="onePagare.enum_clasificacion_pagare === 'OTRO'">
                 <td>Observación</td>
@@ -148,26 +187,10 @@
               <small>"Acepta Visa, MasterCard, American Express, Diners Club, Discover"</small><br>
             </div>
             <div class="mb-3">
-              <b-button
+              <a
                 v-if="!isAuthenticated"
-                tag="a"
-                :href="paymentsUrl + '/' + $route.params.id"
-                class="is-primary"
-                size="is-large"
-                target="_blank"
-                style="background-color:#ff6347;"
-              >
-                <img
-                  src="/img/logoblanco.svg"
-                  style="width:8rem;"
-                >
-              </b-button>
-              <b-button
-                v-else
-                :href="paymentsUrl + '/' + $route.params.id + '?userid=' + tokenForPayments"
-                tag="a"
-                class="is-primary"
-                size="is-large"
+                :href="'https://test-payments.poga.com.py/pay/mavaite/debtdoc/' + $route.params.id"
+                class="button is-large is-primary"
                 target="_blank"
                 style="background-color:#ff6347;"
               >
@@ -175,7 +198,19 @@
                   src="/img/logoblanco_pagos.png"
                   style="width:8rem;"
                 >
-              </b-button>
+              </a>
+              <a
+                v-else
+                :href="'https://test-payments.poga.com.py/pay/mavaite/debtdoc/' + $route.params.id + '?userid=' + tokenForPayments"
+                class="button is-large is-primary"
+                target="_blank"
+                style="background-color:#ff6347;"
+              >
+                <img
+                  src="/img/logoblanco_pagos.png"
+                  style="width:8rem;"
+                >
+              </a>
             </div>
             <div class="level">
               <div class="level-left">
@@ -195,16 +230,25 @@
 </template>
 
 <script>
+import { alertErrorMessage, alertSuccessMessage } from "@/utilities/helpers"
 import { authComputed } from "@/store/helpers"
+import { formatMoney } from "@mvp/utilities/helpers"
 import { pagaresComputed, pagaresMethods, usersComputed, usersMethods } from "@mvp/store/helpers"
 
 import app from "@/app"
 import moment from "moment"
+import Form from "@/utilities/Form"
+
+var fields = {
+    enum_opcion_pago: "TOTAL",
+    monto_manual: 0,
+}
 
 export default {
     data() {
         return {
             boleta: {},
+            form: new Form(fields),
             isEfectivoOpen: false,
             isIntenetOpen: true,
             isOpen: false,
@@ -217,10 +261,6 @@ export default {
         ...authComputed,
         ...pagaresComputed,
         ...usersComputed,
-
-        paymentsUrl() {
-            return app.paymentsUrl
-        }
     },
 
     created() {
@@ -231,9 +271,20 @@ export default {
         ...pagaresMethods,
         ...usersMethods,
 
+        formatMoney,
+
         handleLogin() {
             var intended = "/realiza-un-pago/" + this.$route.params.id
             return this.$router.push({ name: "Login", query: { intended: encodeURI(intended) }})
+        },
+
+        handleSubmitForm() {
+            return this.form.put(app.apiUrl + "/finanzas/actualizarMontoPago/" + this.$route.params.id)
+            .then(response => {
+                alertSuccessMessage("Realiza un pago", "El monto de la boleta fue actualizado.")
+
+                return this.prepare()
+            })
         },
 
         moment,
@@ -253,6 +304,15 @@ export default {
                 })
 
             var pagare = this.fetchOnePagare(this.$route.params.id)
+
+            pagare.then(response => {
+                this.form = new Form({
+                    enum_opcion_pago: response.enum_opcion_pago,
+                    monto_manual: response.monto_manual,
+                })
+
+                return response
+            })
 
             return Promise.all([boleta, pagare])
         }
