@@ -112,6 +112,26 @@
             </b-dropdown-item>
 
             <b-dropdown-item
+              :disabled="props.row.enum_estado !== 'PENDIENTE' || user.role_id !== '4'"
+              has-link="true"
+              aria-role="listitem"
+            >
+              <a
+                v-if="props.row.enum_estado === 'PENDIENTE' && user.role_id == '4' && props.row.enum_clasificacion_pagare === 'RENTA'"
+                href="javascript:void(0)"
+                @click="handleActivarLeyEmergencia(props.row)"
+              >
+                Activar Ley de Emergencia
+              </a>
+              <a
+                v-else
+                class="is-disabled"
+                href="javascript:void(0)"
+              >
+                Activar Ley de Emergencia
+              </a>
+            </b-dropdown-item>
+            <b-dropdown-item
               :disabled="props.row.enum_estado !== 'PENDIENTE' || user.role_id == '4'"
               has-link="true"
               aria-role="listitem"
@@ -205,6 +225,13 @@ export default {
         ...pagaresMethods,
 
         formatMoney,
+
+        handleActivarLeyEmergencia(pagare) {
+            return window.axios.put(app.apiUrl + "/finanzas/activar-ley-emergencia/" + pagare.id)
+            .then(response => {
+                alertSuccessMessage("Pagos", "Hecho.")
+            }) 
+        },
 
         handleAnularPagare(pagare) {
             var html
@@ -310,8 +337,8 @@ export default {
 
                         return boleta
                     })
-            } else if (pagare.enum_clasificacion_pagare === "OTRO") {
-                html = "Está a punto de anular una solicitud de pago para un contrato activo.<br><strong>Esta operación no se puede revertir</strong>.<br>¿Confirma la operación?</p> "
+            } else if (pagare.enum_clasificacion_pagare === "OTRO" || pagare.enum_clasificacion_pagare === "PAGO_DIFERIDO") {
+                html = "Está a punto de anular " + (pagare.enum_clasificacion_pagare === "OTRO" ? "una solicitud de pago" : "un pago diferido") + " para un contrato activo.<br><strong>Esta operación no se puede revertir</strong>.<br>¿Confirma la operación?</p> "
 
                 app.$swal({
                     title: "Anulación de Pago",
