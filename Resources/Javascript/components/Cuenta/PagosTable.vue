@@ -112,26 +112,6 @@
             </b-dropdown-item>
 
             <b-dropdown-item
-              :disabled="props.row.enum_estado !== 'PENDIENTE' || user.role_id !== '4'"
-              has-link="true"
-              aria-role="listitem"
-            >
-              <a
-                v-if="props.row.enum_estado === 'PENDIENTE' && user.role_id == '4' && props.row.enum_clasificacion_pagare === 'RENTA'"
-                href="javascript:void(0)"
-                @click="handleActivarLeyEmergencia(props.row)"
-              >
-                Activar Ley de Emergencia
-              </a>
-              <a
-                v-else
-                class="is-disabled"
-                href="javascript:void(0)"
-              >
-                Activar Ley de Emergencia
-              </a>
-            </b-dropdown-item>
-            <b-dropdown-item
               :disabled="props.row.enum_estado !== 'PENDIENTE' || user.role_id == '4'"
               has-link="true"
               aria-role="listitem"
@@ -149,6 +129,27 @@
                 href="javascript:void(0)"
               >
                 Pagar
+              </a>
+            </b-dropdown-item>
+
+            <b-dropdown-item
+              :disabled="props.row.enum_estado !== 'PENDIENTE' && user.role_id !== '4'"
+              has-link="true"
+              aria-role="listitem"
+            >
+              <a
+                v-if="props.row.enum_estado === 'PENDIENTE' && user.role_id == '4'"
+                href="javascript:void(0)"
+                @click="handleShowRegistrarPagoManualModal(props.row)"
+              >
+                Pago Manual
+              </a>
+              <a
+                v-else
+                class="is-disabled"
+                href="javascript:void(0)"
+              >
+                Pago Manual
               </a>
             </b-dropdown-item>
 
@@ -199,6 +200,7 @@ import { alertErrorMessage, alertSuccessMessage, alertInfoMessage } from "@/util
 import { authComputed } from "@/store/helpers"
 import { formatMoney } from "@mvp/utilities/helpers"
 import { pagaresMethods, usersComputed } from "@mvp/store/helpers"
+import { EventBus } from "@/eventBus"
 
 import app from "@/app"
 import moment from "moment"
@@ -377,6 +379,10 @@ export default {
                         return message
                     })
             }
+        },
+
+        handleShowRegistrarPagoManualModal(pagare) {
+            EventBus.$emit("show-registrar-pago-manual-modal", pagare)
         },
 
         moment,

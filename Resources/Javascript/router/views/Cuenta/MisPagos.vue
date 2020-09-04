@@ -300,6 +300,7 @@
     </b-button>
 
     <MontoExpensasModal :is-active="isMontoExpensasModalActive" />
+    <RegistrarPagoManualModal />
   </section>
 </template>
 
@@ -325,6 +326,7 @@ export default {
                 tipoListado: "MisPagos"
             },
             isMontoExpensasModalActive: false,
+            isRegistrarPagoManualModalActive: false,
             mes_desde: "",
             mes_hasta: "",
             prepared: false,
